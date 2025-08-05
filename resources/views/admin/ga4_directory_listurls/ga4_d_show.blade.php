@@ -1,17 +1,34 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            URL詳細
-        </h2>
+        <h2 class="page-title">URL詳細</h2>
     </x-slot>
 
-    <div class="py-4 px-6">
-        <p><strong>ID:</strong> {{ $url->id }}</p>
-        <p><strong>URL:</strong> {{ $url->url }}</p>
-        <p><strong>アクティブ:</strong> {{ $url->is_active ? '有効' : '無効' }}</p>
-        <p><strong>作成日:</strong> {{ $url->created_at }}</p>
-        <p><strong>更新日:</strong> {{ $url->updated_at }}</p>
+    <div class="detail-table-container">
+        <table class="detail-table">
+            <tbody>
+                <tr>
+                    <th>ID</th>
+                    <td>{{ $url->id }}</td>
+                </tr>
+                <tr>
+                    <th>URL</th>
+                    <td>{{ $url->url }}</td>
+                </tr>
+                <tr>
+                    <th>アクティブ</th>
+                    <td>{{ $url->is_active ? '有効' : '無効' }}</td>
+                </tr>
+                <tr>
+                    <th>作成日</th>
+                    <td>{{ $url->created_at }}</td>
+                </tr>
+                <tr>
+                    <th>更新日</th>
+                    <td>{{ $url->updated_at }}</td>
+                </tr>
+            </tbody>
+        </table>
 
-        <a href="{{ route('admin.urls.index') }}" class="text-blue-600 underline mt-4 inline-block">← 一覧に戻る</a>
+        <a href="{{ route('admin.urls.index') }}" class="back-link">← 一覧に戻る</a>
     </div>
 </x-app-layout>
