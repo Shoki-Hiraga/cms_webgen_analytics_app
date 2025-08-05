@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Ga4DirectoryListurlController;
+use App\Http\Controllers\Admin\GscDirectoryListurlController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,8 +31,13 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('urls', [Ga4DirectoryListurlController::class, 'index'])->name('urls.index');
-    Route::get('urls/{id}', [Ga4DirectoryListurlController::class, 'show'])->name('urls.show');
+    Route::get('ga4-dir-urls', [Ga4DirectoryListurlController::class, 'index'])->name('urls.index');
+    Route::get('ga4-dir-urls/{id}', [Ga4DirectoryListurlController::class, 'show'])->name('urls.show');
+});
+
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('gsc-dir-urls', [GscDirectoryListurlController::class, 'index'])->name('admin.gsc_directory_listurls.index');
+    Route::get('gsc-dir-urls/{id}', [GscDirectoryListurlController::class, 'show'])->name('admin.gsc_directory_listurls.show');
 });
 
 require __DIR__.'/auth.php';
