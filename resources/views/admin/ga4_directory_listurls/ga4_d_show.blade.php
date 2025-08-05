@@ -28,7 +28,6 @@
                 </tr>
             </tbody>
         </table>
-
-        <a href="{{ route('admin.urls.index') }}" class="back-link">← 一覧に戻る</a>
+        <a href="{{ route('admin.gsc_directory_listurls.index') }}" class="back-link">← 一覧に戻る</a>
     </div>
 </x-app-layout>

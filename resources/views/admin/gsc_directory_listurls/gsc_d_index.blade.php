@@ -1,9 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-title">GA4 Directory URLs 一覧</h2>
+        <h2 class="page-title">GSC Directory URLs 一覧</h2>
     </x-slot>
 
     <div class="table-container">
+        <a href="{{ route('admin.gsc_directory_listurls.create') }}" class="btn-primary">＋ 新規追加</a>
+
         <table class="table-base">
             <thead>
                 <tr>
@@ -12,6 +14,7 @@
                     <th>アクティブ</th>
                     <th>作成日</th>
                     <th>詳細</th>
+                    <th>編集</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,7 +25,10 @@
                     <td>{{ $url->is_active ? '✅' : '❌' }}</td>
                     <td>{{ $url->created_at }}</td>
                     <td>
-                        <a href="{{ route('admin.urls.show', $url->id) }}">詳細</a>
+                        <a href="{{ route('admin.gsc_directory_listurls.show', $url->id) }}">詳細</a>
+                    </td>
+                    <td>
+                        <a href="{{ route('admin.gsc_directory_listurls.edit', $url->id) }}">編集</a>
                     </td>
                 </tr>
                 @endforeach

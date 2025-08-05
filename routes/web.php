@@ -31,13 +31,12 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('ga4-dir-urls', [Ga4DirectoryListurlController::class, 'index'])->name('urls.index');
-    Route::get('ga4-dir-urls/{id}', [Ga4DirectoryListurlController::class, 'show'])->name('urls.show');
+    Route::resource('ga4-dir-urls', Ga4DirectoryListurlController::class)
+        ->names('ga4_directory_listurls');
+
+    Route::resource('gsc-dir-urls', GscDirectoryListurlController::class)
+        ->names('gsc_directory_listurls');
 });
 
-Route::prefix('admin')->middleware(['auth'])->group(function () {
-    Route::get('gsc-dir-urls', [GscDirectoryListurlController::class, 'index'])->name('admin.gsc_directory_listurls.index');
-    Route::get('gsc-dir-urls/{id}', [GscDirectoryListurlController::class, 'show'])->name('admin.gsc_directory_listurls.show');
-});
 
 require __DIR__.'/auth.php';
