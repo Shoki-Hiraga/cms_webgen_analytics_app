@@ -74,3 +74,135 @@
   color: #2563eb;
   text-decoration: underline;
 }
+
+/* ===== 編集ページ（form-container） ===== */
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb; /* Tailwind: border-gray-300 */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #374151; /* Tailwind: text-gray-700 */
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db; /* Tailwind: border-gray-300 */
+  border-radius: 6px;
+  font-size: 1rem;
+  color: #111827;
+}
+
+.form-group input[type="text"]:focus {
+  outline: none;
+  border-color: #2563eb; /* Tailwind: blue-600 */
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.error {
+  margin-top: 0.25rem;
+  color: #dc2626; /* Tailwind: red-600 */
+  font-size: 0.875rem;
+}
+
+/* ===== チェックボックススタイル ===== */
+.form-group input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* ===== ボタンスタイル ===== */
+.btn-primary {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background-color: #2563eb; /* Tailwind: blue-600 */
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8; /* Tailwind: blue-700 */
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background-color: #e5e7eb; /* Tailwind: gray-200 */
+  color: #374151; /* Tailwind: gray-700 */
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 0.75rem;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #d1d5db;
+}
+
+.btn-danger {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  background-color: #dc2626; /* Tailwind: red-600 */
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-danger:hover {
+  background-color: #b91c1c; /* Tailwind: red-700 */
+}
+
+/* ===== トップページ：URLリンクカード一覧 ===== */
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.link-card {
+  display: block;
+  padding: 1rem 1.25rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  font-weight: 600;
+  color: #1f2937; /* Tailwind: text-gray-800 */
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+}
+
+.link-card:hover {
+  background-color: #f9fafb;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  color: #2563eb; /* Tailwind: blue-600 */
+}
