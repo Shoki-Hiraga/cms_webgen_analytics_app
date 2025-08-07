@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\GscDirectoryListurlController;
 use App\Http\Controllers\Admin\Ga4FullurlListurlController;
 use App\Http\Controllers\Admin\GscFullurlListurlController;
 use App\Http\Controllers\Admin\Ga4MediaUrlListurlController;
+use App\Http\Controllers\Admin\GscMediaUrlListurlController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::resource('ga4-media-urls', Ga4MediaUrlListurlController::class)
         ->names('ga4_media_url_listurls');
+    Route::resource('gsc-media-urls', GscMediaUrlListurlController::class)
+        ->names('gsc_media_url_listurls');
 
 });
 
