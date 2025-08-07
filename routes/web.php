@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Ga4DirectoryListurlController;
 use App\Http\Controllers\Admin\GscDirectoryListurlController;
+use App\Http\Controllers\Admin\Ga4FullurlListurlController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,7 +37,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::resource('gsc-dir-urls', GscDirectoryListurlController::class)
         ->names('gsc_directory_listurls');
-});
 
+    Route::resource('ga4-fullurl-urls', Ga4FullurlListurlController::class)
+    ->names('ga4_fullurl_listurls');
+
+});
 
 require __DIR__.'/auth.php';
