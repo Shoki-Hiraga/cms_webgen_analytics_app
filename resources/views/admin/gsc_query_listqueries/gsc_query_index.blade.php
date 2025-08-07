@@ -5,6 +5,15 @@
 
     <div class="table-container">
         <a href="{{ route('admin.gsc_query_listqueries.create') }}" class="btn-primary">＋ 新規追加</a>
+            <div class="actions">
+                <a href="{{ route('admin.gsc_query_listqueries.export') }}" class="btn-secondary">CSVエクスポート</a>
+
+                <form action="{{ route('admin.gsc_query_listqueries.import') }}" method="POST" enctype="multipart/form-data" style="display:inline-block;">
+                    @csrf
+                    <button type="submit" class="btn-primary">CSVインポート</button>
+                    <input type="file" name="csv_file" accept=".csv" required>
+                </form>
+            </div>
 
         <table class="table-base">
             <thead>

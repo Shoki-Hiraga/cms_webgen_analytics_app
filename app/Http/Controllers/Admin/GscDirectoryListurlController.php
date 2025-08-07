@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\GscDirectoryListurl;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Validator;
 
 class GscDirectoryListurlController extends Controller
 {
@@ -59,6 +62,68 @@ class GscDirectoryListurlController extends Controller
         $url = GscDirectoryListurl::findOrFail($id);
         $url->delete();
         return redirect()->route('admin.ga4_directory_listurls.index')->with('success', 'URLを削除しました');
+    }
+
+    // CSV エクスポート
+    public function export(): StreamedResponse
+    {
+        $filename = 'gsc_directory_list_' . now()->format('Ymd_His') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename={$filename}",
+        ];
+
+        $callback = function () {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, ['ID', 'URL', 'Is Active', 'Created At']);
+
+            GscDirectoryListurl::cursor()->each(function ($url) use ($handle) {
+                fputcsv($handle, [
+                    $url->id,
+                    $url->url,
+                    $url->is_active ? 1 : 0,
+                    $url->created_at,
+                ]);
+            });
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    // CSV インポート
+    public function import(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        $path = $request->file('csv_file')->getRealPath();
+        $file = fopen($path, 'r');
+        $header = fgetcsv($file); // skip header
+
+        while ($row = fgetcsv($file)) {
+            $data = [
+                'url' => $row[1] ?? null,
+                'is_active' => isset($row[2]) && $row[2] == 1,
+            ];
+
+            $validator = Validator::make($data, [
+                'url' => 'required|url|unique:gsc_directory_listurls,url',
+                'is_active' => 'boolean',
+            ]);
+
+            if ($validator->fails()) {
+                continue;
+            }
+
+            GscDirectoryListurl::create($data);
+        }
+
+        fclose($file);
+
+        return redirect()->route('admin.gsc_directory_listurls.index')->with('success', 'CSVをインポートしました');
     }
 
 }

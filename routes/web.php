@@ -36,6 +36,29 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('gsc-query-queries/export', [GscQueryListqueryController::class, 'export'])->name('gsc_query_listqueries.export');
+    Route::post('gsc-query-queries/import', [GscQueryListqueryController::class, 'import'])->name('gsc_query_listqueries.import');
+
+    Route::get('gsc-media-urls/export', [GscMediaUrlListurlController::class, 'export'])->name('gsc_media_url_listurls.export');
+    Route::post('gsc-media-urls/import', [GscMediaUrlListurlController::class, 'import'])->name('gsc_media_url_listurls.import');
+
+    Route::get('gsc-fullurl-urls/export', [GscFullurlListurlController::class, 'export'])->name('gsc_fullurl_listurls.export');
+    Route::post('gsc-fullurl-urls/import', [GscFullurlListurlController::class, 'import'])->name('gsc_fullurl_listurls.import');
+
+    Route::get('gsc-dir-urls/export', [GscDirectoryListurlController::class, 'export'])->name('gsc_directory_listurls.export');
+    Route::post('gsc-dir-urls/import', [GscDirectoryListurlController::class, 'import'])->name('gsc_directory_listurls.import');
+
+    Route::get('ga4-media-urls/export', [Ga4MediaUrlListurlController::class, 'export'])->name('ga4_media_url_listurls.export');
+    Route::post('ga4-media-urls/import', [Ga4MediaUrlListurlController::class, 'import'])->name('ga4_media_url_listurls.import');
+
+    Route::get('ga4-fullurl-urls/export', [Ga4FullurlListurlController::class, 'export'])->name('ga4_fullurl_listurls.export');
+    Route::post('ga4-fullurl-urls/import', [Ga4FullurlListurlController::class, 'import'])->name('ga4_fullurl_listurls.import');
+
+    Route::get('ga4-dir-urls/export', [Ga4DirectoryListurlController::class, 'export'])->name('ga4_directory_listurls.export');
+    Route::post('ga4-dir-urls/import', [Ga4DirectoryListurlController::class, 'import'])->name('ga4_directory_listurls.import');
+
+
+
     Route::resource('ga4-dir-urls', Ga4DirectoryListurlController::class)
         ->names('ga4_directory_listurls');
     Route::resource('gsc-dir-urls', GscDirectoryListurlController::class)
