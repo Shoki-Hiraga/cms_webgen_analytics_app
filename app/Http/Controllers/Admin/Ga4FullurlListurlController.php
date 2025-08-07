@@ -33,7 +33,7 @@ class Ga4FullurlListurlController extends Controller
         ]);
 
         Ga4FullurlListurl::create($validated);
-        return redirect()->route('admin.ga4_fullurl_listurls.ga4_full_index')->with('success', 'URLを追加しました');
+        return redirect()->route('admin.ga4_fullurl_listurls.index')->with('success', 'URLを追加しました');
     }
 
     public function edit($id)
