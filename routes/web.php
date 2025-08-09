@@ -23,7 +23,7 @@ use App\Http\Controllers\Admin\GscQueryListqueryController;
 
 Route::get('/', function () {
     return view('index');
-});
+})->name('top');
 
 Route::get('/dashboard', function () {
     return view('dashboard');

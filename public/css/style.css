@@ -230,3 +230,79 @@
   color: #374151;
   background-color: #ffffff;
 }
+
+/* ===== ゲスト導線 共通 ===== */
+.guest-link {
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.guest-login-link {
+    color: #4b5563; /* グレー */
+}
+
+.guest-login-link:hover {
+    color: #111827; /* 濃いグレー */
+}
+
+.guest-register-link {
+    color: #2563eb; /* ブルー */
+}
+
+.guest-register-link:hover {
+    color: #1e40af; /* 濃いブルー */
+}
+
+/* ===== ナビゲーションのゲストリンク（PC表示） ===== */
+.guest-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* ===== モバイルメニューのゲスト案内 ===== */
+.guest-mobile-info {
+    padding: 1rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.guest-mobile-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.guest-mobile-subtitle {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.guest-mobile-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 1rem;
+}
+
+/* ===== index.blade.php ゲストメッセージ ===== */
+.guest-index-message {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.guest-index-text {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #374151;
+}
+
+.guest-index-links {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
