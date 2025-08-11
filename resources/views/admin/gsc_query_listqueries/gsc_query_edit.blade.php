@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-title">GSC クエリ編集</h2>
+        <x-slot name="title">編集 | @include('components.Gsc_Queries') </x-slot>
+        <h2 class="page-title">@include('components.Gsc_Queries') 編集</h2>
     </x-slot>
 
     <div class="form-container">

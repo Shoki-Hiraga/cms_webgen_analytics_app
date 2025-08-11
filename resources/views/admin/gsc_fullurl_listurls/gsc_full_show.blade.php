@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-title">URL詳細</h2>
+        <x-slot name="title">詳細 | @include('components.Gsc_Full_Urls') </x-slot>
+        <h2 class="page-title">@include('components.Gsc_Full_Urls') 詳細</h2>
     </x-slot>
 
     <div class="detail-table-container">

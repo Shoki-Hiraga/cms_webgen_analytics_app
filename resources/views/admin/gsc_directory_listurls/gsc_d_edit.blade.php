@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-title">GSC URL 編集</h2>
+        <x-slot name="title">編集 | @include('components.Gsc_Directory_Urls') </x-slot>
+        <h2 class="page-title">@include('components.Gsc_Directory_Urls') 編集</h2>
     </x-slot>
 
     <div class="form-container">

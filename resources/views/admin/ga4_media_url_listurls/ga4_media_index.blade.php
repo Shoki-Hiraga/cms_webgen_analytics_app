@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-title">GA4 Media URL 一覧</h2>
+        <x-slot name="title">一覧 | @include('components.Ga4_Media_Urls') </x-slot>
+        <h2 class="page-title">@include('components.Ga4_Media_Urls') 一覧</h2>
     </x-slot>
 
     <div class="table-container">

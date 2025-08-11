@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-title">ga4 URL 編集</h2>
+        <x-slot name="title">編集 | @include('components.Ga4_Directory_Urls') </x-slot>
+        <h2 class="page-title">@include('components.Ga4_Directory_Urls') 編集</h2>
     </x-slot>
 
     <div class="form-container">

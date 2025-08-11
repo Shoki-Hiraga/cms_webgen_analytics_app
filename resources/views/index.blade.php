@@ -1,5 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
+        <x-slot name="title">TOP | cms_webgen_analytics_app</x-slot>
         <h2 class="page-title">URL 管理メニュー</h2>
     </x-slot>
 

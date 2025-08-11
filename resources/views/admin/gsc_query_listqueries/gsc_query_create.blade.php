@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-title">新しい GSC クエリを追加</h2>
+        <x-slot name="title">新規 | @include('components.Gsc_Queries') </x-slot>
+        <h2 class="page-title">@include('components.Gsc_Queries') にクエリを追加</h2>
     </x-slot>
 
     <div class="form-container">

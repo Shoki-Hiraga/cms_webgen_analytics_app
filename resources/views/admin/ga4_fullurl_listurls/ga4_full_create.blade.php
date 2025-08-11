@@ -1,6 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="page-title">新しい GA4 Full URL を追加</h2>
+        <x-slot name="title">新規 | @include('components.Ga4_Full_Urls') </x-slot>
+        <h2 class="page-title">@include('components.Ga4_Full_Urls') にURLを追加</h2>
     </x-slot>
 
     <div class="form-container">
