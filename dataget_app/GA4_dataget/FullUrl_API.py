@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from setting_file.header import *
@@ -8,14 +9,6 @@ from setting_file.GA4_Set.GA4_dateSet import generate_monthly_date_ranges
 from setting_file.GA4_Set.GA4_date_Duplicate_FullUrl import record_exists
 # from setting_file.GA4_Set.GA4_QshURL_Maker import URLS
 
-
-SESSION_MEDIUM_FILTER = "organic"
-
-# 認証設定
-SERVICE_ACCOUNT_FILE = api_json.qsha_oh_ga4
-PROPERTY_ID = '307515371'
-credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE)
-client = BetaAnalyticsDataClient(credentials=credentials)
 
 # .env 読み込み
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', 'config', '.env'))
@@ -31,7 +24,49 @@ def get_db_connection():
         print(f"[CRITICAL DB ERROR] DB接続に失敗しました: {e}")
         traceback.print_exc()
         raise  # エラーを再スローしてメイン処理も止める
-# 
+
+def get_ga4_settings():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = "SELECT session_medium_filter, service_account_json, property_id FROM ga4_setting LIMIT 1"
+        cursor.execute(query)
+        setting = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if not setting:
+            raise ValueError("GA4設定がテーブルに存在しません")
+
+        # service_account_json をPython dictに変換
+        service_account_info = json.loads(setting['service_account_json'])
+
+        return {
+            'SESSION_MEDIUM_FILTER': setting['session_medium_filter'],
+            'SERVICE_ACCOUNT_INFO': service_account_info,
+            'PROPERTY_ID': setting['property_id']
+        }
+    except Exception as e:
+        print(f"[CRITICAL DB ERROR] GA4設定取得に失敗しました: {e}")
+        traceback.print_exc()
+        raise
+
+# 認証設定 GA4設定をDBから取得
+ga4_settings = get_ga4_settings()
+
+SESSION_MEDIUM_FILTER = ga4_settings['SESSION_MEDIUM_FILTER']
+PROPERTY_ID = ga4_settings['PROPERTY_ID']
+
+# JSON直読みで認証情報を作成
+credentials = service_account.Credentials.from_service_account_info(
+    ga4_settings['SERVICE_ACCOUNT_INFO']
+)
+
+client = BetaAnalyticsDataClient(credentials=credentials)
+
+
 def get_landing_urls_from_db():
     try:
         conn = get_db_connection()
