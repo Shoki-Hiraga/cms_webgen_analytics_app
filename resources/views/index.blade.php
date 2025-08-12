@@ -13,6 +13,9 @@
             <a href="{{ route('admin.ga4_media_url_listurls.index') }}" class="link-card">GA4 メディア URL</a>
             <a href="{{ route('admin.gsc_media_url_listurls.index') }}" class="link-card">GSC メディア URL</a>
             <a href="{{ route('admin.gsc_query_listqueries.index') }}" class="link-card">GSC クエリ</a>
+            <a href="{{ route('admin.ga4_settings.index') }}" class="link-card">GA4 設定</a>
+            <a href="{{ route('admin.gsc_settings.index') }}" class="link-card">GSC 設定</a>
+
         </div>
     @else
         <div class="guest-index-message">
