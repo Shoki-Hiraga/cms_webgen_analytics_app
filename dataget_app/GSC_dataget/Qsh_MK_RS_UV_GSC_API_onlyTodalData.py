@@ -1,5 +1,7 @@
 import sys
 import os
+import json
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from setting_file.header import *
 from setting_file.setFunc import get_db_config
@@ -7,20 +9,6 @@ from setting_file.Search_Console_set.GSC_dateSet import generate_monthly_date_ra
 from setting_file.Search_Console_set.GSC_date_Duplicate import record_exists
 # from dataget_app.setting_file.Search_Console_set.QshURL_MK_RS_UV_HS import URLS
 
-# 対象のサイトURLを指定します
-site_url = 'https://www.qsha-oh.com/'
-
-# JSONファイルのパスを指定
-SERVICE_ACCOUNT_FILE = api_json.qsha_oh
-
-# Search Console APIの認証情報を指定
-credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=['https://www.googleapis.com/auth/webmasters.readonly']
-)
-
-# Search Console APIのバージョンとプロジェクトIDを指定します
-api_version = 'v3'
-service = build('webmasters', api_version, credentials=credentials)
 
 # .env 読み込み
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', 'config', '.env'))
@@ -36,6 +24,46 @@ def get_db_connection():
         print(f"[CRITICAL DB ERROR] DB接続に失敗しました: {e}")
         traceback.print_exc()
         raise  # エラーを再スローしてメイン処理も止める
+
+def get_gsc_settings():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query = "SELECT site_url, service_account_json FROM gsc_setting LIMIT 1"
+        cursor.execute(query)
+        setting = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if not setting:
+            raise ValueError("GSC設定がテーブルに存在しません")
+
+        service_account_info = json.loads(setting['service_account_json'])
+
+        return {
+            'SITE_URL': setting['site_url'],
+            'SERVICE_ACCOUNT_INFO': service_account_info
+        }
+    except Exception as e:
+        print(f"[CRITICAL DB ERROR] GSC設定取得に失敗しました: {e}")
+        traceback.print_exc()
+        raise
+
+# GSC設定をDBから取得
+gsc_settings = get_gsc_settings()
+
+site_url = gsc_settings['SITE_URL']
+
+credentials = service_account.Credentials.from_service_account_info(
+    gsc_settings['SERVICE_ACCOUNT_INFO'],
+    scopes=['https://www.googleapis.com/auth/webmasters.readonly']
+)
+
+# Search Console APIのバージョン
+api_version = 'v3'
+service = build('webmasters', api_version, credentials=credentials)
 
 def get_urls_from_db():
     try:
@@ -91,7 +119,7 @@ def insert_gsc_data(page_url, total_impressions, total_clicks, avg_ctr, avg_posi
         cursor = conn.cursor()
 
         insert_query = """
-            INSERT INTO gsc_directory
+            INSERT INTO gsc_directly
             (page_url, total_impressions, total_clicks, avg_ctr, avg_position, start_date, end_date, created_at, updated_at)
             VALUES (%s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
         """

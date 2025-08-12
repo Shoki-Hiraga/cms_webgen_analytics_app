@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\Ga4MediaUrlListurlController;
 use App\Http\Controllers\Admin\GscMediaUrlListurlController;
 use App\Http\Controllers\Admin\GscQueryListqueryController;
 use App\Http\Controllers\Admin\Ga4SettingController;
+use App\Http\Controllers\Admin\GscSettingController;
 
 
 /*
@@ -83,6 +84,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::resource('ga4-settings', Ga4SettingController::class)
         ->names('ga4_settings')
+        ->except(['show']);
+
+    Route::resource('gsc-settings', GscSettingController::class)
+        ->names('gsc_settings')
         ->except(['show']);
 
 });
