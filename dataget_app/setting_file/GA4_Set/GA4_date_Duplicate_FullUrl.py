@@ -2,20 +2,21 @@ from setting_file.setFunc import get_db_config
 import mysql.connector
 import traceback
 
-def record_exists(page_url, start_date, end_date):
+def record_exists(landing_url, session_medium, start_date, end_date):
     try:
         config = get_db_config()
         conn = mysql.connector.connect(**config)
         cursor = conn.cursor()
 
         query = """
-            SELECT COUNT(*) FROM gsc_directly
-            WHERE page_url = %s
+            SELECT COUNT(*) FROM ga4_fullurl
+            WHERE landing_url = %s
+              AND session_medium = %s
               AND start_date = %s
               AND end_date = %s
         """
 
-        cursor.execute(query, (page_url, start_date, end_date))
+        cursor.execute(query, (landing_url, session_medium, start_date, end_date))
         result = cursor.fetchone()[0]
 
         cursor.close()
@@ -26,4 +27,4 @@ def record_exists(page_url, start_date, end_date):
     except Exception as e:
         print(f"[DB ERROR] 重複チェック失敗: {e}")
         traceback.print_exc()
-        return False  # 念のため False を返す
+        return False

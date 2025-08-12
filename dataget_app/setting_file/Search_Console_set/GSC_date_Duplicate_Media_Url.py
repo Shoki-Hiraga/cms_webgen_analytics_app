@@ -9,7 +9,7 @@ def record_exists(page_url, start_date, end_date):
         cursor = conn.cursor()
 
         query = """
-            SELECT COUNT(*) FROM gsc_directly
+            SELECT COUNT(*) FROM gsc_media_url
             WHERE page_url = %s
               AND start_date = %s
               AND end_date = %s

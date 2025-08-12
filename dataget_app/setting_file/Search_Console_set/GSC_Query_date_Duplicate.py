@@ -9,7 +9,7 @@ def record_exists(query_keyword, start_date, end_date):
         cursor = conn.cursor()
 
         query = """
-            SELECT COUNT(*) FROM gsc_qsha_oh_query
+            SELECT COUNT(*) FROM gsc_query
             WHERE query_keyword = %s
               AND start_date = %s
               AND end_date = %s
