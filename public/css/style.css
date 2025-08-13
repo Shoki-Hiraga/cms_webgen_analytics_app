@@ -140,7 +140,7 @@
   display: inline-block;
   padding: 0.5rem 1.25rem;
   background-color: #2563eb; /* Tailwind: blue-600 */
-  color: #ffffff;
+  color: #ffffff !important;
   border: none;
   border-radius: 6px;
   font-weight: 600;

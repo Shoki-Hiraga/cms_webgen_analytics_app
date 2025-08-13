@@ -18,7 +18,7 @@
                     <td>{{ $script }}</td>
                     <td>
                         <a href="{{ route('admin.python.run', $script) }}" class="btn-primary">
-                            実行
+                            API を 実行
                         </a>
                     </td>
                 </tr>
