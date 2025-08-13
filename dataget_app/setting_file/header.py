@@ -15,6 +15,9 @@ import random
 import mysql.connector
 from dotenv import load_dotenv
 import traceback
+import sys
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))# スクリプトが存在するディレクトリを作業ディレクトリとして設定
 

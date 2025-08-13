@@ -80,6 +80,8 @@ class PythonRunnerController extends Controller
         $pidPath = storage_path("logs/{$script}.pid");
 
         $logContent = file_exists($logPath) ? file_get_contents($logPath) : '';
+        // UTF-8 以外で出てくる場合を考慮して変換
+        $logContent = mb_convert_encoding($logContent, 'UTF-8', 'auto');
 
         $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
         $isRunning = false;

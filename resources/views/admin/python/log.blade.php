@@ -5,8 +5,11 @@
     </x-slot>
 
     <div class="log-container">
-        <div class="log-actions">
+        <div class="log-actions" style="margin-bottom:1rem;">
             <a href="{{ route('admin.python.index') }}" class="btn-secondary">← 戻る</a>
+
+            {{-- 更新ボタン --}}
+            <a href="{{ route('admin.python.log', ['script' => $script]) }}" class="btn-primary">🔄 更新</a>
 
             {{-- Linuxのみ停止ボタン表示 --}}
             @if ($isRunning)

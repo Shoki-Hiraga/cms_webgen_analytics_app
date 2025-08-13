@@ -25,7 +25,7 @@ def get_db_config():
             'host': 'mysql8004.xserver.jp',
             'user': 'chasercb750_anal',
             'password': '78195090Cb',
-            'database': 'chasercb750_webanalytics',
+            'database': 'chasercb750_gwebanalytics',
             'port': 3306,
             'charset': 'utf8mb4',
             'ssl_disabled': True
