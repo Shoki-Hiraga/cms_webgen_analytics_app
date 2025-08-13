@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\GscQueryListqueryController;
 use App\Http\Controllers\Admin\Ga4SettingController;
 use App\Http\Controllers\Admin\GscSettingController;
 use App\Http\Controllers\Admin\DatasetingController;
+use App\Http\Controllers\Admin\PythonRunnerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,6 +96,21 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('dataseting', DatasetingController::class)
         ->names('dataseting')
         ->except(['show']);
+
+
+
+    // Python実行系
+    Route::get('python-api', [PythonRunnerController::class, 'index'])
+        ->name('python.index');
+
+    Route::get('run-python/{script}', [PythonRunnerController::class, 'run'])
+        ->name('python.run');
+
+    Route::get('logs/{script}', [PythonRunnerController::class, 'showLog'])
+        ->name('python.log');
+    
+    Route::post('stop-python/{script}', [PythonRunnerController::class, 'stop'])
+        ->name('python.stop');
 
 });
 
