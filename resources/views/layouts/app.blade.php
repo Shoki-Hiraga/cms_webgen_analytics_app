@@ -33,6 +33,7 @@
             <main>
                 {{ $slot }}
             </main>
+        <a href="{{ route('top') }}" class="link-top">TOPへ戻る</a>
         </div>
     </body>
 </html>
