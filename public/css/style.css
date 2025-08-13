@@ -6,6 +6,15 @@
   margin-bottom: 1rem;
 }
 
+.page-description {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937; /* Tailwindの text-gray-800 相当 */
+  margin-top: 30px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 /* ===== 一覧ページ（index） ===== */
 .table-container {
   padding: 1rem 1.5rem;
