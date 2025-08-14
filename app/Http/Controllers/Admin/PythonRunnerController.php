@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\App;
 
 class PythonRunnerController extends Controller
 {
@@ -16,19 +17,11 @@ class PythonRunnerController extends Controller
         'Qsh_MK_RS_UV'  => 'dataget_app/GSC_dataget/Qsh_MK_RS_UV_GSC_API_onlyTodalData.py',
     ];
 
-    /**
-     * 一覧画面
-     */
     public function index()
     {
-        return view('admin.python.button_index', [
-            'scripts' => array_keys($this->scripts)
-        ]);
+        return view('admin.python.button_index', ['scripts' => array_keys($this->scripts)]);
     }
 
-    /**
-     * Pythonスクリプト実行（OS判定あり）
-     */
     public function run($script)
     {
         if (!isset($this->scripts[$script])) {
@@ -37,63 +30,51 @@ class PythonRunnerController extends Controller
 
         $scriptPath = base_path($this->scripts[$script]);
         $logPath = storage_path("logs/{$script}.log");
+        $pidPath = storage_path("logs/{$script}.pid");
 
-        // 実行環境判定
-        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
-
-        // Pythonパス設定（本番用とローカル用）
-        if ($isWindows) {
-            // Windows（ローカル）
-            $pythonPath = 'C:\\Users\\K39_sho\\AppData\\Local\\Programs\\Python\\Python312\\python.exe';
-        } else {
-            // Linux（Xサーバーなど）
-            $pythonPath = '~/anaconda3/bin/python';
+        // 二重実行チェック
+        if (file_exists($pidPath)) {
+            $oldPid = trim(file_get_contents($pidPath));
+            if ($this->isProcessRunning($oldPid)) {
+                return back()->with('error', "このスクリプトは既に実行中です (PID: {$oldPid})。停止してから再実行してください。");
+            }
         }
 
-        // 古いログ削除はしない（上書きモードで作成されるので不要）
-        if (file_exists($logPath)) {
-            @unlink($logPath);
-        }
+        // 古いログは空にする
+        file_put_contents($logPath, '');
 
-        // OSごとの非同期実行コマンド
-        if ($isWindows) {
-            // Windows: start /B でバックグラウンド実行
-            $cmd = "start /B \"\" \"{$pythonPath}\" -u \"{$scriptPath}\" > \"{$logPath}\" 2>&1";
+        // 実行コマンド
+        $os = strtoupper(substr(PHP_OS, 0, 3));
+        if ($os === 'WIN') {
+            // Windows
+            $pythonPath = 'C:\\Users\\hiraga\\AppData\\Local\\Programs\\Python\\Python312\\python.exe';
+            $cmd = "start /B \"\" \"{$pythonPath}\" -u \"{$scriptPath}\" >> \"{$logPath}\" 2>&1";
             pclose(popen($cmd, "r"));
+            // WindowsではPID取得が難しいのでダミー値を入れる（停止はWindows非対応）
+            file_put_contents($pidPath, 'WIN_NO_PID');
         } else {
-            // Linux: nohup + & でバックグラウンド実行
-            $cmd = "nohup {$pythonPath} -u {$scriptPath} > {$logPath} 2>&1 & echo $!";
-            exec($cmd, $output);
-            // PID保存（停止用）
-            file_put_contents(storage_path("logs/{$script}.pid"), $output[0] ?? '');
+            // Linux
+            $pythonPath = '~/anaconda3/bin/python';
+            $cmd = "nohup {$pythonPath} -u {$scriptPath} >> {$logPath} 2>&1 & echo $!";
+            $pid = shell_exec($cmd);
+            file_put_contents($pidPath, trim($pid));
         }
 
         return redirect()->route('admin.python.log', ['script' => $script]);
     }
 
-    /**
-     * ログ表示
-     */
     public function showLog($script)
     {
         $logPath = storage_path("logs/{$script}.log");
         $pidPath = storage_path("logs/{$script}.pid");
 
         $logContent = file_exists($logPath) ? file_get_contents($logPath) : '';
-        // UTF-8 以外で出てくる場合を考慮して変換
-        $logContent = mb_convert_encoding($logContent, 'UTF-8', 'auto');
-
-        $isWindows = strtoupper(substr(PHP_OS, 0, 3)) === 'WIN';
         $isRunning = false;
 
-        if (!$isWindows && file_exists($pidPath)) {
+        if (file_exists($pidPath)) {
             $pid = trim(file_get_contents($pidPath));
-            if ($pid) {
-                exec("ps -p {$pid}", $statusOutput);
-                $isRunning = count($statusOutput) > 1;
-            }
+            $isRunning = $this->isProcessRunning($pid);
         }
-        // Windows側のプロセス監視は省略（常にfalse）
 
         return view('admin.python.log', [
             'script' => $script,
@@ -102,21 +83,40 @@ class PythonRunnerController extends Controller
         ]);
     }
 
-    /**
-     * 停止機能（Linuxのみ）
-     */
     public function stop($script)
     {
         $pidPath = storage_path("logs/{$script}.pid");
-
-        if (file_exists($pidPath)) {
-            $pid = trim(file_get_contents($pidPath));
-            if ($pid) {
-                exec("kill {$pid}");
-            }
-            unlink($pidPath);
+        if (!file_exists($pidPath)) {
+            return back()->with('error', 'PIDファイルが存在しません。');
         }
 
-        return redirect()->route('admin.python.log', ['script' => $script]);
+        $pid = trim(file_get_contents($pidPath));
+        $os = strtoupper(substr(PHP_OS, 0, 3));
+
+        if ($os === 'WIN') {
+            if ($pid === 'WIN_NO_PID') {
+                return back()->with('error', 'Windowsではこの方法で停止はサポートされていません。');
+            }
+            exec("taskkill /PID {$pid} /F");
+        } else {
+            exec("kill -9 {$pid}");
+        }
+
+        unlink($pidPath);
+        return back()->with('success', "スクリプト {$script} を停止しました。");
+    }
+
+    private function isProcessRunning($pid)
+    {
+        if (!$pid || $pid === 'WIN_NO_PID') {
+            return false;
+        }
+        $os = strtoupper(substr(PHP_OS, 0, 3));
+        if ($os === 'WIN') {
+            exec("tasklist /FI \"PID eq {$pid}\"", $output);
+            return count($output) > 1 && !str_contains($output[1], '情報:');
+        } else {
+            return trim(shell_exec("ps -p {$pid} -o pid=")) == $pid;
+        }
     }
 }
