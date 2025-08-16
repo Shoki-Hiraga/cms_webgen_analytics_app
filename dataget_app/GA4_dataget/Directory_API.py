@@ -19,10 +19,10 @@ def get_db_connection():
     try:
         config = get_db_config()
         conn = mysql.connector.connect(**config)
-        print("[DEBUG] DB接続成功")
+        print("[DEBUG] DB接続成功", flush=True)
         return conn
     except Exception as e:
-        print(f"[CRITICAL DB ERROR] DB接続に失敗しました: {e}")
+        print(f"[CRITICAL DB ERROR] DB接続に失敗しました: {e}", flush=True)
         traceback.print_exc()
         raise  # エラーを再スローしてメイン処理も止める
 
@@ -50,7 +50,7 @@ def get_ga4_settings():
             'PROPERTY_ID': setting['property_id']
         }
     except Exception as e:
-        print(f"[CRITICAL DB ERROR] GA4設定取得に失敗しました: {e}")
+        print(f"[CRITICAL DB ERROR] GA4設定取得に失敗しました: {e}", flush=True)
         traceback.print_exc()
         raise
 
@@ -78,14 +78,14 @@ def get_landing_urls_from_db():
         cursor.execute(query)
 
         urls = [row[0] for row in cursor.fetchall()]
-        print(f"[DEBUG] {len(urls)} 件のURLを取得")
+        print(f"[DEBUG] {len(urls)} 件のURLを取得", flush=True)
 
         cursor.close()
         conn.close()
         return urls
 
     except Exception as e:
-        print(f"[DB ERROR] URL取得中にエラー: {e}")
+        print(f"[DB ERROR] URL取得中にエラー: {e}", flush=True)
         traceback.print_exc()
         return []
 
@@ -118,7 +118,7 @@ def get_total_sessions_from_landing(landing_url):
         response = client.run_report(request)
         return sum(int(row.metric_values[0].value or 0) for row in response.rows)
     except Exception as e:
-        print(f"[ERROR] Total sessions error for {landing_url}: {e}")
+        print(f"[ERROR] Total sessions error for {landing_url}: {e}", flush=True)
         return 0
 
 # CV数を取得
@@ -162,14 +162,14 @@ def get_cv_sessions_from_landing(landing_url):
         response = client.run_report(request)
         return sum(int(row.metric_values[0].value or 0) for row in response.rows)
     except Exception as e:
-        print(f"[ERROR] CV count error for {landing_url}: {e}")
+        print(f"[ERROR] CV count error for {landing_url}: {e}", flush=True)
         return 0
 
 # DBに保存
 def insert_into_db(landing_url, session_medium, total_sessions, cv_count, cvr, start_date, end_date):
     try:
         print(f"[DEBUG] Insert: URL={landing_url}, Medium={session_medium}, Sessions={total_sessions}, "
-              f"CVs={cv_count}, CVR={cvr}, Start={start_date}, End={end_date}")
+              f"CVs={cv_count}, CVR={cvr}, Start={start_date}, End={end_date}", flush=True)
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -191,17 +191,17 @@ def insert_into_db(landing_url, session_medium, total_sessions, cv_count, cvr, s
         )
 
         cursor.execute(insert_query, values)
-        print("[DEBUG] SQL実行成功")
+        print("[DEBUG] SQL実行成功", flush=True)
 
         conn.commit()
-        print("[DEBUG] コミット成功")
+        print("[DEBUG] コミット成功", flush=True)
 
         cursor.close()
         conn.close()
-        print("[DEBUG] DB接続クローズ完了")
+        print("[DEBUG] DB接続クローズ完了", flush=True)
 
     except Exception as e:
-        print(f"[DB ERROR] DB挿入中にエラーが発生しました: {e}")
+        print(f"[DB ERROR] DB挿入中にエラーが発生しました: {e}", flush=True)
         traceback.print_exc()
 
 # メイン処理
@@ -209,28 +209,28 @@ date_ranges = generate_monthly_date_ranges()
 
 try:
     URLS = get_landing_urls_from_db()
-    print(f"[INFO] 開始 URLS = {URLS}")
+    print(f"[INFO] 開始 URLS = {URLS}", flush=True)
     for start_date, end_date in date_ranges:
         set_start_date = start_date.strftime("%Y-%m-%d")
         set_end_date = end_date.strftime("%Y-%m-%d")
         db_start_date = start_date
         db_end_date = end_date
 
-        print(f"[INFO] 処理期間: {set_start_date} ～ {set_end_date}")
+        print(f"[INFO] 処理期間: {set_start_date} ～ {set_end_date}", flush=True)
 
         for landing_url in URLS:
             # 重複チェックを実行
             if record_exists(landing_url, SESSION_MEDIUM_FILTER, db_start_date, db_end_date):
-                print(f"[SKIP] 既に登録済み: {landing_url}, {db_start_date} - {db_end_date}")
+                print(f"[SKIP] 既に登録済み: {landing_url}, {db_start_date} - {db_end_date}", flush=True)
                 continue  # スキップして次へ
 
-            print(f"[INFO] 処理中: {landing_url}")
+            print(f"[INFO] 処理中: {landing_url}", flush=True)
             total_sessions = get_total_sessions_from_landing(landing_url)
             cv_count = get_cv_sessions_from_landing(landing_url)
 
             cvr = round((cv_count / total_sessions) * 100, 2) if total_sessions > 0 else 0.0
 
-            print(f'[INFO] ランディングページ: {landing_url}, セッション: {total_sessions}, CV: {cv_count}, CVR: {cvr:.2f}%')
+            print(f'[INFO] ランディングページ: {landing_url}, セッション: {total_sessions}, CV: {cv_count}, CVR: {cvr:.2f}%', flush=True)
 
             insert_into_db(
                 landing_url=landing_url,
@@ -243,8 +243,8 @@ try:
             )
 
             delay = random.uniform(3.0, 4.5)
-            print(f'[DEBUG] 遅延 {delay:.2f} 秒\n')
+            print(f'[DEBUG] 遅延 {delay:.2f} 秒\n', flush=True)
             time.sleep(delay)
 
 except Exception as err:
-    print(f'\n[CRITICAL ERROR] エラーが発生しました: {err}')
+    print(f'\n[CRITICAL ERROR] エラーが発生しました: {err}', flush=True)

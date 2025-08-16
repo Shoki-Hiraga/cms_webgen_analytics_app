@@ -18,10 +18,10 @@ def get_db_connection():
     try:
         config = get_db_config()
         conn = mysql.connector.connect(**config)
-        print("[DEBUG] DB接続成功")
+        print("[DEBUG] DB接続成功", flush=True)
         return conn
     except Exception as e:
-        print(f"[CRITICAL DB ERROR] DB接続に失敗しました: {e}")
+        print(f"[CRITICAL DB ERROR] DB接続に失敗しました: {e}", flush=True)
         traceback.print_exc()
         raise  # エラーを再スローしてメイン処理も止める
 
@@ -47,7 +47,7 @@ def get_gsc_settings():
             'SERVICE_ACCOUNT_INFO': service_account_info
         }
     except Exception as e:
-        print(f"[CRITICAL DB ERROR] GSC設定取得に失敗しました: {e}")
+        print(f"[CRITICAL DB ERROR] GSC設定取得に失敗しました: {e}", flush=True)
         traceback.print_exc()
         raise
 
@@ -74,14 +74,14 @@ def get_urls_from_db():
         cursor.execute(query)
 
         urls = [row[0] for row in cursor.fetchall()]
-        print(f"[DEBUG] {len(urls)} 件のURLを取得")
+        print(f"[DEBUG] {len(urls)} 件のURLを取得", flush=True)
 
         cursor.close()
         conn.close()
         return urls
 
     except Exception as e:
-        print(f"[DB ERROR] URL取得中にエラー: {e}")
+        print(f"[DB ERROR] URL取得中にエラー: {e}", flush=True)
         traceback.print_exc()
         return []
 
@@ -108,12 +108,12 @@ def get_search_url_data(site_url, page_url):
         response = service.searchanalytics().query(siteUrl=site_url, body=request).execute()
         return response.get('rows', []), page_url
     except Exception as e:
-        print(f'Error retrieving data for URL {page_url}: {e}')
+        print(f'Error retrieving data for URL {page_url}: {e}', flush=True)
         return [], page_url
 
 def insert_gsc_data(page_url, total_impressions, total_clicks, avg_ctr, avg_position, start_date, end_date):
     try:
-        print(f"[DEBUG] Insert: {page_url}, Impr={total_impressions}, Clicks={total_clicks}, CTR={avg_ctr}, Pos={avg_position}")
+        print(f"[DEBUG] Insert: {page_url}, Impr={total_impressions}, Clicks={total_clicks}, CTR={avg_ctr}, Pos={avg_position}", flush=True)
 
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -136,13 +136,13 @@ def insert_gsc_data(page_url, total_impressions, total_clicks, avg_ctr, avg_posi
 
         cursor.execute(insert_query, values)
         conn.commit()
-        print("[DEBUG] DB保存成功")
+        print("[DEBUG] DB保存成功", flush=True)
 
         cursor.close()
         conn.close()
 
     except Exception as e:
-        print(f"[DB ERROR] GSCデータ保存に失敗しました: {e}")
+        print(f"[DB ERROR] GSCデータ保存に失敗しました: {e}", flush=True)
         traceback.print_exc()
 
 try:
@@ -154,17 +154,17 @@ try:
         db_start_date = start_date
         db_end_date = end_date
 
-        print(f"\n[INFO] 期間: {set_start_date} ～ {set_end_date}")
+        print(f"\n[INFO] 期間: {set_start_date} ～ {set_end_date}", flush=True)
 
         for url in urls:
             # 重複チェック
             if record_exists(url, db_start_date, db_end_date):
-                print(f"[SKIP] 既に登録済み: {url}, {db_start_date} - {db_end_date}")
+                print(f"[SKIP] 既に登録済み: {url}, {db_start_date} - {db_end_date}", flush=True)
                 continue
             search_url_data, original_url = get_search_url_data(site_url, url)
 
             delay = random.uniform(3.0, 4.5)
-            print(f'遅延処理 {delay:.2f} 秒')
+            print(f'遅延処理 {delay:.2f} 秒', flush=True)
             time.sleep(delay)
 
             total_impressions = 0
@@ -192,7 +192,7 @@ try:
                 avg_ctr = 0
                 avg_position = 0
 
-            print(f'URL: {original_url}, 合計表示回数: {total_impressions}, 合計クリック数: {total_clicks}, 平均CTR: {avg_ctr:.4f}, 平均掲載順位: {avg_position:.2f}')
+            print(f'URL: {original_url}, 合計表示回数: {total_impressions}, 合計クリック数: {total_clicks}, 平均CTR: {avg_ctr:.4f}, 平均掲載順位: {avg_position:.2f}', flush=True)
 
             # DBに保存
             insert_gsc_data(
@@ -206,4 +206,4 @@ try:
             )
 
 except Exception as err:
-    print(f'[CRITICAL ERROR] エラーが発生しました: {err}')
+    print(f'[CRITICAL ERROR] エラーが発生しました: {err}', flush=True)
