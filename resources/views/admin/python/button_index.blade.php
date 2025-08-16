@@ -9,7 +9,7 @@
             <thead>
                 <tr>
                     <th>スクリプト名</th>
-                    <th>実行</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody>
@@ -17,9 +17,15 @@
                 <tr>
                     <td>{{ $script }}</td>
                     <td>
-                        <a href="{{ route('admin.python.run', $script) }}" class="btn-primary">
-                            API を 実行
-                        </a>
+                        @if ($statuses[$script])
+                            <a href="{{ route('admin.python.log', $script) }}" class="btn-secondary">
+                                ログを開く
+                            </a>
+                        @else
+                            <a href="{{ route('admin.python.run', $script) }}" class="btn-primary">
+                                API を 実行
+                            </a>
+                        @endif
                     </td>
                 </tr>
                 @endforeach

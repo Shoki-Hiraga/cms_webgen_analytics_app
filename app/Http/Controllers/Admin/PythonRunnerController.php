@@ -19,7 +19,21 @@ class PythonRunnerController extends Controller
 
     public function index()
     {
-        return view('admin.python.button_index', ['scripts' => array_keys($this->scripts)]);
+        $statuses = [];
+        foreach ($this->scripts as $name => $path) {
+            $pidPath = storage_path("logs/{$name}.pid");
+            $isRunning = false;
+            if (file_exists($pidPath)) {
+                $pid = trim(file_get_contents($pidPath));
+                $isRunning = $this->isProcessRunning($pid);
+            }
+            $statuses[$name] = $isRunning;
+        }
+
+        return view('admin.python.button_index', [
+            'scripts' => array_keys($this->scripts),
+            'statuses' => $statuses
+        ]);
     }
 
     public function run($script)
