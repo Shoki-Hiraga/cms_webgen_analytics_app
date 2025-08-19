@@ -10,20 +10,6 @@
             @csrf
             @method('PUT')
 
-            {{-- セッションメディアフィルター --}}
-            <div class="form-group">
-                <label for="session_medium_filter">セッションメディアフィルター</label>
-                <input type="text" 
-                       name="session_medium_filter" 
-                       id="session_medium_filter" 
-                       value="{{ old('session_medium_filter', $ga4_setting->session_medium_filter) }}" 
-                       required 
-                       class="form-control">
-                @error('session_medium_filter')
-                    <div class="error">{{ $message }}</div>
-                @enderror
-            </div>
-
             {{-- サービスアカウントJSON --}}
             <div class="form-group">
                 <label for="service_account_json">サービスアカウントJSON</label>

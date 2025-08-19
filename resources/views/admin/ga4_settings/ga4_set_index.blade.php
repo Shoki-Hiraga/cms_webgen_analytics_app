@@ -14,7 +14,6 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>セッションメディアフィルター</th>
                     <th>プロパティID</th>
                     <th>作成日</th>
                     <th>更新日</th>
@@ -25,7 +24,6 @@
                 @if($setting)
                     <tr>
                         <td>{{ $setting->id }}</td>
-                        <td>{{ $setting->session_medium_filter }}</td>
                         <td>{{ $setting->property_id }}</td>
                         <td>{{ $setting->created_at }}</td>
                         <td>{{ $setting->updated_at }}</td>

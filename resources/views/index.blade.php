@@ -27,6 +27,11 @@
             <a href="{{ route('admin.dataseting.index') }}" class="link-card">日付 設定</a>            
         </div>
 
+    <h2 class="page-description">GA4 GSC フィルター設定</h2>
+        <div class="link-grid">
+            <a href="{{ route('admin.ga4_filters.index') }}" class="link-card">GA4 フィルター設定</a>
+        </div>
+
     <h2 class="page-description">GA4 API</h2>
         <div class="link-grid">
             <a href="{{ route('admin.python.index') }}" class="link-card">Python API実行一覧</a>

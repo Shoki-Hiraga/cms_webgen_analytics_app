@@ -30,7 +30,15 @@ def get_ga4_settings():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        query = "SELECT session_medium_filter, service_account_json, property_id FROM ga4_setting LIMIT 1"
+        query = """
+            SELECT 
+                gf.session_medium_filter, 
+                gs.service_account_json, 
+                gs.property_id
+            FROM ga4_setting gs
+            JOIN ga4_filter gf ON gs.id = gf.ga4_setting_id
+            LIMIT 1
+        """
         cursor.execute(query)
         setting = cursor.fetchone()
 
@@ -40,7 +48,6 @@ def get_ga4_settings():
         if not setting:
             raise ValueError("GA4設定がテーブルに存在しません")
 
-        # service_account_json をPython dictに変換
         service_account_info = json.loads(setting['service_account_json'])
 
         return {
