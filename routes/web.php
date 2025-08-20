@@ -13,7 +13,6 @@ use App\Http\Controllers\Admin\Ga4SettingController;
 use App\Http\Controllers\Admin\GscSettingController;
 use App\Http\Controllers\Admin\DatasetingController;
 use App\Http\Controllers\Admin\PythonRunnerController;
-use App\Http\Controllers\Admin\Ga4FilterController;
 
 /*
 |--------------------------------------------------------------------------
@@ -87,18 +86,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('ga4-settings', Ga4SettingController::class)
         ->names('ga4_settings')
         ->except(['show']);
-
-    Route::get('ga4-filters', [Ga4FilterController::class, 'index'])
-        ->name('ga4_filters.index');
-    Route::get('ga4-filters/create', [Ga4FilterController::class, 'create'])
-        ->name('ga4_filters.create');
-    Route::post('ga4-filters', [Ga4FilterController::class, 'store'])
-        ->name('ga4_filters.store');
-
-    Route::get('ga4-settings/{ga4_setting}/filter/edit', [Ga4FilterController::class, 'edit'])
-        ->name('ga4_filters.edit');
-    Route::put('ga4-settings/{ga4_setting}/filter', [Ga4FilterController::class, 'update'])
-        ->name('ga4_filters.update');
 
     Route::resource('gsc-settings', GscSettingController::class)
         ->names('gsc_settings')

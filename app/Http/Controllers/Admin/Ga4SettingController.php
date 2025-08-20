@@ -44,23 +44,15 @@ class Ga4SettingController extends Controller
         }
 
         $validated = $request->validate([
+            'session_medium_filter' => 'required|string|max:255',
             'service_account_json' => 'required|json',
             'property_id' => 'required|string|max:255',
-            'session_medium_filter' => 'required|string|max:255', // 一時的にここで取得
         ]);
 
+        // idを1固定で登録
         $validated['id'] = 1;
 
-        $setting = Ga4Setting::create([
-            'id' => $validated['id'],
-            'service_account_json' => $validated['service_account_json'],
-            'property_id' => $validated['property_id'],
-        ]);
-
-        // フィルタ作成
-        $setting->filter()->create([
-            'session_medium_filter' => $validated['session_medium_filter'],
-        ]);
+        Ga4Setting::create($validated);
 
         return redirect()
             ->route('admin.ga4_settings.index')
@@ -81,21 +73,12 @@ class Ga4SettingController extends Controller
     public function update(Request $request, Ga4Setting $ga4_setting)
     {
         $validated = $request->validate([
+            'session_medium_filter' => 'required|string|max:255',
             'service_account_json' => 'required|json',
             'property_id' => 'required|string|max:255',
-            'session_medium_filter' => 'required|string|max:255',
         ]);
 
-        $ga4_setting->update([
-            'service_account_json' => $validated['service_account_json'],
-            'property_id' => $validated['property_id'],
-        ]);
-
-        // フィルタ更新（存在しない場合は作成）
-        $ga4_setting->filter()->updateOrCreate(
-            ['ga4_setting_id' => $ga4_setting->id],
-            ['session_medium_filter' => $validated['session_medium_filter']]
-        );
+        $ga4_setting->update($validated);
 
         return redirect()
             ->route('admin.ga4_settings.index')

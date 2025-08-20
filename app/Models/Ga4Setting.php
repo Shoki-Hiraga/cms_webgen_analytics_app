@@ -13,16 +13,11 @@ class Ga4Setting extends Model
 
     protected $fillable = [
         'id',
+        'session_medium_filter',
         'service_account_json',
         'property_id',
     ];
 
-    public $incrementing = false; // オートインクリメントしない
-    protected $keyType = 'int';   // 主キーは整数型
-
-    // Ga4Filter リレーション
-    public function filter()
-    {
-        return $this->hasOne(Ga4Filter::class, 'ga4_setting_id');
-    }
+    public $incrementing = false; // ← オートインクリメントしない設定
+    protected $keyType = 'int'; // 主キーは整数型
 }
