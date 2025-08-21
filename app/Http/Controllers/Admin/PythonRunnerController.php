@@ -11,6 +11,7 @@ class PythonRunnerController extends Controller
         'Directory_API' => 'dataget_app/GA4_dataget/Directory_API.py',
         'FullUrl_API'   => 'dataget_app/GA4_dataget/FullUrl_API.py',
         'Media_Url_API' => 'dataget_app/GA4_dataget/Media_Url_API.py',
+        'GSC_Directory'   => 'dataget_app/GSC_dataget/Qsh_MK_RS_UV_GSC_API_onlyTodalData.py',
         'GSC_FullUrl'   => 'dataget_app/GSC_dataget/GSC_FullUrl_API_onlyTodalData.py',
         'GSC_Media'     => 'dataget_app/GSC_dataget/GSC_Media_Url_API_onlyTodalData.py',
         'GSC_Query'     => 'dataget_app/GSC_dataget/GSC_Query_API_onlyTodalData.py',
