@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import mysql.connector
 
 # Laravel プロジェクトの .env を読み込む（2階層上のルートにある）
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
@@ -32,3 +33,27 @@ def get_db_config():
         }
 
     return db_config
+
+def get_keywords_from_db(table_name):
+    """
+    指定テーブル（organic_keywords / ads_keywords）から keyword を取得
+    """
+    try:
+        config = get_db_config()
+        conn = mysql.connector.connect(**config)
+        cursor = conn.cursor()
+
+        query = f"SELECT keyword FROM {table_name} ORDER BY id ASC"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        keywords = [row[0] for row in rows]
+        print(f"[INFO] {table_name} から {len(keywords)} 件キーワードを取得しました")
+        return keywords
+
+    except Exception as e:
+        print(f"[DB ERROR] キーワード取得失敗: {e}")
+        return []

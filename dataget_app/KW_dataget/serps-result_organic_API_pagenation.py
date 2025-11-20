@@ -1,11 +1,12 @@
+# dataget_app/KW_dataget/serps-result_organic_API_pagenation.py
+
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from datetime import date, datetime, timedelta
 from setting_file.header import *
-from setting_file.setFunc import get_db_config
-from setting_file.scraping_KW.organic_KW_pagenation import search_keywords_list
+from setting_file.setFunc import get_db_config, get_keywords_from_db
 
 import mysql.connector
 import time
@@ -30,7 +31,7 @@ api_keys = {
 
 google_api_key = api_keys[api_key_index]
 CUSTOM_SEARCH_ENGINE_ID = gcp_api.custom_search_ENGINE_ID_current
-delaytime = 4.000002
+delaytime = 4.0
 
 
 #############################################
@@ -70,9 +71,9 @@ def serp_exists_recent(keyword):
         conn.close()
 
         if count > 0:
-            print(f"[SKIP] {keyword} は過去10日以内に保存済み → スキップ")
+            print(f"[SKIP] {keyword} は過去10日以内に取得済み → スキップします")
         else:
-            print(f"[INFO] {keyword} は保存対象（10日以内データなし）")
+            print(f"[INFO] {keyword} は取得対象です")
 
         return count > 0
 
@@ -103,7 +104,7 @@ def insert_serp_result(fetched_date, rank, keyword, url, title):
         cursor.close()
         conn.close()
 
-        print(f"[DB] 保存成功：{keyword}（順位: {rank}）")
+        print(f"[DB] 保存成功：{keyword}（{rank}位）")
 
     except Exception as e:
         print(f"[DB ERROR] SERP保存失敗: {e}")
@@ -113,7 +114,6 @@ def insert_serp_result(fetched_date, rank, keyword, url, title):
 # ■ Google API 準備
 #############################################
 service = build("customsearch", "v1", developerKey=google_api_key)
-
 results_per_page = 10
 max_pages_to_fetch = 1
 
@@ -126,7 +126,7 @@ def search_and_save_to_db(keyword):
     today = date.today().isoformat()
 
     try:
-        print(f"[PROCESS] {keyword} の SERP 取得開始")
+        print(f"\n[PROCESS] {keyword} の SERP 取得開始")
 
         search_results = []
 
@@ -146,7 +146,7 @@ def search_and_save_to_db(keyword):
 
             items = res.get("items", [])
             if not items:
-                print("[INFO] 検索結果0件 → 次ページなし")
+                print("[INFO] 検索結果0件 → 終了")
                 break
 
             for item in items:
@@ -173,9 +173,15 @@ def search_and_save_to_db(keyword):
 if __name__ == "__main__":
     print("===== SERP Organic API 実行開始 =====")
 
+    # ★ キーワードを DB から取得（NEW）
+    search_keywords_list = get_keywords_from_db("organic_keywords")
+
+    if not search_keywords_list:
+        print("[ERROR] organic_keywords にキーワードがありません")
+        exit()
+
     for keyword in search_keywords_list:
 
-        # ▼ 重複チェック（10日以内は保存不要）
         if serp_exists_recent(keyword):
             continue
 

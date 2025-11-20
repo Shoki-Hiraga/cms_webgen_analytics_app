@@ -1,10 +1,11 @@
+# dataget_app/KW_dataget/ads-API_Current_KW_planner.py
+
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from setting_file.header import *
-from setting_file.setFunc import get_db_config
-from setting_file.scraping_KW.ads_api_KW import search_keywords_list
+from setting_file.setFunc import get_db_config, get_keywords_from_db
 
 import mysql.connector
 from google.ads.googleads.client import GoogleAdsClient
@@ -22,7 +23,7 @@ delay_time = 3.4
 
 
 #############################################
-# ■ DB接続（GSC/SERP と同仕様）
+# ■ DB接続
 #############################################
 def get_db_connection():
     try:
@@ -58,9 +59,9 @@ def record_exists_recent(keyword):
         conn.close()
 
         if count > 0:
-            print(f"[SKIP] {keyword} は過去10日以内に保存済み → スキップ")
+            print(f"[SKIP] {keyword} は過去10日以内に取得済み → スキップ")
         else:
-            print(f"[INFO] {keyword} は保存対象（10日以内データなし）")
+            print(f"[INFO] {keyword} は取得対象です")
 
         return count > 0
 
@@ -70,7 +71,7 @@ def record_exists_recent(keyword):
 
 
 #############################################
-# ■ DB INSERT
+# ■ Ads キーワード保存
 #############################################
 def insert_ads_keyword_data(keyword, search_volume, competition_level,
                             competition_index, low_cpc, high_cpc):
@@ -110,12 +111,11 @@ def get_keyword_ideas(client, customer_id, keyword_texts):
     print(f"[API] Ads API リクエスト開始: {keyword_texts}")
 
     keyword_plan_idea_service = client.get_service("KeywordPlanIdeaService")
-    language_id = 1000  # 日本語
+    language_id = 1000
 
     request = client.get_type("GenerateKeywordIdeasRequest")
     request.customer_id = customer_id
     request.language = client.get_service("GoogleAdsService").language_constant_path(language_id)
-
     request.keyword_seed.keywords.extend(keyword_texts)
 
     try:
@@ -144,26 +144,32 @@ def get_keyword_ideas(client, customer_id, keyword_texts):
         )
 
         keyword_data.append({
-            'keyword': result.text,
-            'avg_monthly_search_volume': avg_monthly_searches,
-            'low_cpc': low_top_of_page_bid,
-            'high_cpc': high_top_of_page_bid,
-            'competition_level': competition_level,
-            'competition_index': competition_index,
+            "keyword": result.text,
+            "avg_monthly_search_volume": avg_monthly_searches,
+            "low_cpc": low_top_of_page_bid,
+            "high_cpc": high_top_of_page_bid,
+            "competition_level": competition_level,
+            "competition_index": competition_index,
         })
 
     return keyword_data
 
 
 #############################################
-# ■ メイン処理（DB 保存）
+# ■ メイン処理
 #############################################
 if __name__ == "__main__":
     print("========== Google Ads Keyword Planner 実行開始 ==========")
 
+    # ★ DB から Ads キーワード取得（NEW）
+    search_keywords_list = get_keywords_from_db("ads_keywords")
+
+    if not search_keywords_list:
+        print("[ERROR] ads_keywords にキーワードがありません")
+        exit()
+
     for keyword in search_keywords_list:
 
-        # ▼ 重複チェック（10日以内ならスキップ）
         if record_exists_recent(keyword):
             continue
 
@@ -171,7 +177,7 @@ if __name__ == "__main__":
 
         for item in results:
             print(
-                f"[RESULT] KW: {item['keyword']} | 月間検索数: {item['avg_monthly_search_volume']} "
+                f"[RESULT] KW: {item['keyword']} | 検索数: {item['avg_monthly_search_volume']} "
                 f"| CPC低: {item['low_cpc']} | CPC高: {item['high_cpc']} "
                 f"| 競合レベル: {item['competition_level']} | 指標: {item['competition_index']}"
             )
