@@ -37,11 +37,11 @@
                     <td>{{ $kw->created_at }}</td>
 
                     <td>
-                        <a href="{{ route('admin.Ads_keywords.edit', $kw->id) }}">編集</a>
+                        <a href="{{ route('admin.ads_keywords.edit', $kw->id) }}">編集</a>
                     </td>
 
                     <td>
-                        <form action="{{ route('admin.Ads_keywords.destroy', $kw->id) }}" method="POST"
+                        <form action="{{ route('admin.ads_keywords.destroy', $kw->id) }}" method="POST"
                             onsubmit="return confirm('削除してもよろしいですか？');">
                             @csrf
                             @method('DELETE')

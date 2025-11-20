@@ -128,7 +128,7 @@ class AdsKeywordController extends Controller
                 continue; // 無効な行はスキップ
             }
 
-            \App\Models\AdscKeyword::create($data);
+            \App\Models\AdsKeyword::create($data);
         }
 
         fclose($file);
