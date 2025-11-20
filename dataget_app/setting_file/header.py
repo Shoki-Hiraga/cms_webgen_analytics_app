@@ -9,6 +9,7 @@ from google.analytics.data_v1beta.types import (
     DateRange, Metric, Dimension, RunReportRequest,
     FilterExpression, FilterExpressionList, Filter
 )
+from google.ads.googleads.client import GoogleAdsClient
 from datetime import datetime
 import time
 import random
