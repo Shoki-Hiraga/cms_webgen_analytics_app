@@ -2,6 +2,7 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from setting_file.header import *
+
 # 設定方法
 # https://docs.google.com/document/d/1U4HWFDTHMAbTCl6SZuajYDMqsog5DUf7Ytpe1Acm0mE/edit?tab=t.0
 

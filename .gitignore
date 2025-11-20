@@ -19,6 +19,8 @@ yarn-error.log
 /dataget_app/setting_file/api_json.py
 /dataget_app/setting_file/api_yaml.py
 /dataget_app/setting_file/gcp_api.py
+/dataget_app/setting_file/yaml_file
+
 **/__pycache__/**
 __pycache__/
 AI_apikey.py

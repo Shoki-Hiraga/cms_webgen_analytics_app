@@ -1,13 +1,24 @@
+# dataget_app/KW_dataget/serps-result_organic_API_pagenation.py
+
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from datetime import date
 from setting_file.header import *
+from setting_file.setFunc import get_db_config
+from setting_file.scraping_KW.organic_KW_pagenation import search_keywords_list
 
-request_count = 0  # クエリカウンター
+import mysql.connector
+import time
 
-# APIキーの選択
-api_key_index = 1 # 使用するAPIキーのインデックス番号
+
+#############################################
+# ■ APIキー設定
+#############################################
+request_count = 0  # APIリクエストカウンター
+
+api_key_index = 1  # 使用APIキー設定
 api_keys = {
     1: gcp_api.custom_search_API_KEY_current,
     2: gcp_api.custom_search_API_KEY_332r,
@@ -18,51 +29,81 @@ api_keys = {
     7: gcp_api.custom_search_API_KEY_current_data_ana_p
 }
 
-google_api_key = api_keys[api_key_index] # APIキーの取得
+google_api_key = api_keys[api_key_index]
 
-# カスタムサーチエンジンID
-# CUSTOM_SEARCH_ENGINE_ID = gcp_api.custom_search_ENGINE_ID_332r
+# Custom Search Engine ID
 CUSTOM_SEARCH_ENGINE_ID = gcp_api.custom_search_ENGINE_ID_current
 
-# リクエストの遅延時間を定義
-delaytime = 3.000002
+delaytime = 3.000002  # APIディレイ（Google推奨）
 
 
-# ファイルパス
-file_directory = file_path.file_directory # file_path.py で定義したファイルディレクトリを指定
-file_name = "site_search_results_pagenation5.csv"
-output_file = os.path.join(file_directory, file_name)
+#############################################
+# ■ DB接続関数（GSCスクリプトと統一仕様）
+#############################################
+def get_db_connection():
+    try:
+        config = get_db_config()
+        conn = mysql.connector.connect(**config)
+        print("[DEBUG] DB接続成功")
+        return conn
+    except Exception as e:
+        print(f"[CRITICAL DB ERROR] DB接続に失敗しました: {e}")
+        raise
 
-# KWリスト
-from setting_file.scraping_KW.organic_KW_pagenation import search_keywords_list
 
-# 1ページあたりの検索件数
-results_per_page = 10
-# ページネーションを何ページ取得するか指定
-max_pages_to_fetch = 3
+#############################################
+# ■ DB INSERT 関数（SERP結果保存）
+#############################################
+def insert_serp_result(fetched_date, rank, keyword, url, title):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-# Google Custom Search APIサービスの構築
+        insert_query = """
+            INSERT INTO serp_organic_results
+            (fetched_date, rank, keyword, url, title, created_at, updated_at)
+            VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
+        """
+
+        values = (fetched_date, rank, keyword, url, title)
+
+        cursor.execute(insert_query, values)
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        print(f"[DB] 保存成功：{keyword}（順位: {rank}）")
+
+    except Exception as e:
+        print(f"[DB ERROR] SERPデータ保存失敗: {e}")
+
+
+#############################################
+# ■ Google Custom Search API 準備
+#############################################
 service = build("customsearch", "v1", developerKey=google_api_key)
 
-# CSVファイルの初期化
-if not os.path.exists(file_directory):
-    os.makedirs(file_directory)
+results_per_page = 10   # 1ページあたりの結果
+max_pages_to_fetch = 1  # 最大ページ数
 
-with open(output_file, mode='w', newline='', encoding='utf-8') as file:
-    writer = csv.writer(file)
-    writer.writerow(["取得日", "順位", "Keyword", "URL", "Meta Title"])
 
-# 検索とCSV出力
-def search_and_write_to_csv(keyword):
+#############################################
+# ■ SERP検索 → DB保存メイン関数
+#############################################
+def search_and_save_to_db(keyword):
     global request_count
-    today = date.today().isoformat()  # '2025-01-15' のような形式
+    today = date.today().isoformat()
 
     try:
         search_results = []
+
         for page in range(max_pages_to_fetch):
             start_index = page * results_per_page + 1
+
             print(f"[REQUEST] KW: {keyword} / Page: {page+1}")
 
+            # APIリクエスト
             res = service.cse().list(
                 q=keyword,
                 cx=CUSTOM_SEARCH_ENGINE_ID,
@@ -71,7 +112,7 @@ def search_and_write_to_csv(keyword):
             ).execute()
 
             request_count += 1
-            print(f"[API REQUEST] {request_count} 回目のリクエストに成功しました")
+            print(f"[API REQUEST] {request_count} 回目成功")
 
             items = res.get("items", [])
             if not items:
@@ -82,20 +123,32 @@ def search_and_write_to_csv(keyword):
                 title = item.get("title")
                 search_results.append([keyword, url, title])
 
+            # Google APIレートリミット対策
             time.sleep(delaytime)
-            print(f"{delaytime}秒の遅延が完了しました")
+            print(f"{delaytime}秒遅延完了")
 
-        # ▼ CSV 書き込み（取得日 → 順位 → その他）
-        with open(output_file, mode='a', newline='', encoding='utf-8') as file:
-            writer = csv.writer(file)
-            for index, row in enumerate(search_results, start=1):
-                writer.writerow([today, index] + row)
+        # ▼ DB保存処理（順位付きで保存）
+        for index, row in enumerate(search_results, start=1):
+            insert_serp_result(
+                fetched_date=today,
+                rank=index,
+                keyword=row[0],
+                url=row[1],
+                title=row[2]
+            )
 
-        print(f"Keyword '{keyword}' processed successfully. Found {len(search_results)} results.")
+        print(f"[DONE] {keyword}: {len(search_results)}件保存完了")
 
     except Exception as e:
-        print(f"このKWでエラーが発生しました '{keyword}': {e}")
+        print(f"[ERROR] KW '{keyword}' エラー発生: {e}")
 
-# 各キーワードに対して検索を実行
-for keyword in search_keywords_list:
-    search_and_write_to_csv(keyword)
+
+#############################################
+# ■ メイン処理
+#############################################
+if __name__ == "__main__":
+    print("===== SERP Organic API 実行開始 =====")
+    for keyword in search_keywords_list:
+        search_and_save_to_db(keyword)
+    print("===== すべてのキーワード処理完了 =====")
+

@@ -29,4 +29,4 @@ set_end_date = "2025-06-01"
 db_start_date = datetime.strptime(set_start_date, "%Y-%m-%d").date()
 db_end_date = datetime.strptime(set_end_date, "%Y-%m-%d").date()
 
-from setting_file import csv_output_path, gcp_api, api_json, api_yaml  # 設定ファイルからCSVの出力パスとAPIのJSONをインポート
+from setting_file import gcp_api, api_json, api_yaml  # 設定ファイルからCSVの出力パスとAPIのJSONをインポート
