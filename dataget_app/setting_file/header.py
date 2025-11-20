@@ -27,3 +27,5 @@ set_end_date = "2025-06-01"
 # DB用：文字列を datetime.date に変換
 db_start_date = datetime.strptime(set_start_date, "%Y-%m-%d").date()
 db_end_date = datetime.strptime(set_end_date, "%Y-%m-%d").date()
+
+from setting_file import csv_output_path, gcp_api, api_json, api_yaml  # 設定ファイルからCSVの出力パスとAPIのJSONをインポート
