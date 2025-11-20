@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\Ga4SettingController;
 use App\Http\Controllers\Admin\GscSettingController;
 use App\Http\Controllers\Admin\DatasetingController;
 use App\Http\Controllers\Admin\PythonRunnerController;
+use App\Http\Controllers\Admin\OrganicKeywordController;
+use App\Http\Controllers\Admin\AdsKeywordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +100,25 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->except(['show']);
 
 
+
+    Route::resource('organic_keywords', OrganicKeywordController::class)
+        ->names('organic_keywords')
+        ->except(['show']);
+    Route::resource('ads_keywords', AdsKeywordController::class)
+        ->names('ads_keywords')
+        ->except(['show']);
+
+    Route::get('organic_keywords/export', [OrganicKeywordController::class, 'export'])
+        ->name('organic_keywords.export');
+
+    Route::post('organic_keywords/import', [OrganicKeywordController::class, 'import'])
+        ->name('organic_keywords.import');
+
+    Route::get('ads_keywords/export', [AdsKeywordController::class, 'export'])
+        ->name('ads_keywords.export');
+
+    Route::post('ads_keywords/import', [AdsKeywordController::class, 'import'])
+        ->name('ads_keywords.import');
 
     // Python実行系
     Route::get('python-api', [PythonRunnerController::class, 'index'])

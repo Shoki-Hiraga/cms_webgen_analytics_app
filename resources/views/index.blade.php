@@ -27,6 +27,19 @@
             <a href="{{ route('admin.dataseting.index') }}" class="link-card">日付 設定</a>            
         </div>
 
+    <h2 class="page-description">KW get 基本設定</h2>
+        <div class="link-grid">
+            <a href="{{ route('admin.organic_keywords.index') }}" class="link-card">検索APIキーワード設定</a>
+            <a href="{{ route('admin.ads_keywords.index') }}" class="link-card">KWプランナーキーワード設定</a>
+
+            <a href="{{ route('admin.ads_keywords.index') }}" class="link-card">KWプランナーキーワード追加</a>
+            <a href="{{ route('admin.organic_keywords.index') }}" class="link-card">KWプランナーキーワード一覧</a>
+
+
+
+            <a href="{{ route('admin.dataseting.index') }}" class="link-card">日付 設定</a>            
+        </div>
+
     <h2 class="page-description">GA4 API</h2>
         <div class="link-grid">
             <a href="{{ route('admin.python.index') }}" class="link-card">Python API実行一覧</a>
