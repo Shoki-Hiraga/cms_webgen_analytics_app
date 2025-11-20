@@ -1,10 +1,8 @@
-# dataget_app/KW_dataget/serps-result_organic_API_pagenation.py
-
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from datetime import date
+from datetime import date, datetime, timedelta
 from setting_file.header import *
 from setting_file.setFunc import get_db_config
 from setting_file.scraping_KW.organic_KW_pagenation import search_keywords_list
@@ -16,9 +14,10 @@ import time
 #############################################
 # ■ APIキー設定
 #############################################
-request_count = 0  # APIリクエストカウンター
+print("[INIT] Google Custom Search API 初期化中...")
 
-api_key_index = 1  # 使用APIキー設定
+request_count = 0
+api_key_index = 1
 api_keys = {
     1: gcp_api.custom_search_API_KEY_current,
     2: gcp_api.custom_search_API_KEY_332r,
@@ -30,15 +29,12 @@ api_keys = {
 }
 
 google_api_key = api_keys[api_key_index]
-
-# Custom Search Engine ID
 CUSTOM_SEARCH_ENGINE_ID = gcp_api.custom_search_ENGINE_ID_current
-
-delaytime = 3.000002  # APIディレイ（Google推奨）
+delaytime = 4.000002
 
 
 #############################################
-# ■ DB接続関数（GSCスクリプトと統一仕様）
+# ■ DB接続
 #############################################
 def get_db_connection():
     try:
@@ -47,12 +43,46 @@ def get_db_connection():
         print("[DEBUG] DB接続成功")
         return conn
     except Exception as e:
-        print(f"[CRITICAL DB ERROR] DB接続に失敗しました: {e}")
+        print(f"[CRITICAL DB ERROR] DB接続失敗: {e}")
         raise
 
 
 #############################################
-# ■ DB INSERT 関数（SERP結果保存）
+# ■ 重複チェック（10日以内）
+#############################################
+def serp_exists_recent(keyword):
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        ten_days_ago = datetime.now() - timedelta(days=10)
+
+        query = """
+            SELECT COUNT(*)
+            FROM serp_organic_results
+            WHERE keyword = %s AND created_at >= %s
+        """
+
+        cursor.execute(query, (keyword, ten_days_ago))
+        count = cursor.fetchone()[0]
+
+        cursor.close()
+        conn.close()
+
+        if count > 0:
+            print(f"[SKIP] {keyword} は過去10日以内に保存済み → スキップ")
+        else:
+            print(f"[INFO] {keyword} は保存対象（10日以内データなし）")
+
+        return count > 0
+
+    except Exception as e:
+        print(f"[DB ERROR] 重複チェック失敗: {e}")
+        return False
+
+
+#############################################
+# ■ INSERT
 #############################################
 def insert_serp_result(fetched_date, rank, keyword, url, title):
     try:
@@ -76,34 +106,34 @@ def insert_serp_result(fetched_date, rank, keyword, url, title):
         print(f"[DB] 保存成功：{keyword}（順位: {rank}）")
 
     except Exception as e:
-        print(f"[DB ERROR] SERPデータ保存失敗: {e}")
+        print(f"[DB ERROR] SERP保存失敗: {e}")
 
 
 #############################################
-# ■ Google Custom Search API 準備
+# ■ Google API 準備
 #############################################
 service = build("customsearch", "v1", developerKey=google_api_key)
 
-results_per_page = 10   # 1ページあたりの結果
-max_pages_to_fetch = 1  # 最大ページ数
+results_per_page = 10
+max_pages_to_fetch = 1
 
 
 #############################################
-# ■ SERP検索 → DB保存メイン関数
+# ■ SERP取得メイン
 #############################################
 def search_and_save_to_db(keyword):
     global request_count
     today = date.today().isoformat()
 
     try:
+        print(f"[PROCESS] {keyword} の SERP 取得開始")
+
         search_results = []
 
         for page in range(max_pages_to_fetch):
             start_index = page * results_per_page + 1
-
             print(f"[REQUEST] KW: {keyword} / Page: {page+1}")
 
-            # APIリクエスト
             res = service.cse().list(
                 q=keyword,
                 cx=CUSTOM_SEARCH_ENGINE_ID,
@@ -112,43 +142,43 @@ def search_and_save_to_db(keyword):
             ).execute()
 
             request_count += 1
-            print(f"[API REQUEST] {request_count} 回目成功")
+            print(f"[API] {request_count} 回目リクエスト成功")
 
             items = res.get("items", [])
             if not items:
+                print("[INFO] 検索結果0件 → 次ページなし")
                 break
 
             for item in items:
-                url = item.get("link")
-                title = item.get("title")
-                search_results.append([keyword, url, title])
+                search_results.append([
+                    keyword,
+                    item.get("link"),
+                    item.get("title"),
+                ])
 
-            # Google APIレートリミット対策
             time.sleep(delaytime)
-            print(f"{delaytime}秒遅延完了")
 
-        # ▼ DB保存処理（順位付きで保存）
         for index, row in enumerate(search_results, start=1):
-            insert_serp_result(
-                fetched_date=today,
-                rank=index,
-                keyword=row[0],
-                url=row[1],
-                title=row[2]
-            )
+            insert_serp_result(today, index, row[0], row[1], row[2])
 
-        print(f"[DONE] {keyword}: {len(search_results)}件保存完了")
+        print(f"[DONE] {keyword}: {len(search_results)} 件 保存完了")
 
     except Exception as e:
-        print(f"[ERROR] KW '{keyword}' エラー発生: {e}")
+        print(f"[ERROR] {keyword} 処理中エラー: {e}")
 
 
 #############################################
-# ■ メイン処理
+# ■ メイン実行
 #############################################
 if __name__ == "__main__":
     print("===== SERP Organic API 実行開始 =====")
-    for keyword in search_keywords_list:
-        search_and_save_to_db(keyword)
-    print("===== すべてのキーワード処理完了 =====")
 
+    for keyword in search_keywords_list:
+
+        # ▼ 重複チェック（10日以内は保存不要）
+        if serp_exists_recent(keyword):
+            continue
+
+        search_and_save_to_db(keyword)
+
+    print("===== すべてのキーワード処理完了 =====")

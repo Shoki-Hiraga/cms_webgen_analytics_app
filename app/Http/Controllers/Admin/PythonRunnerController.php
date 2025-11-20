@@ -16,7 +16,8 @@ class PythonRunnerController extends Controller
         'GSC_Media'     => 'dataget_app/GSC_dataget/GSC_Media_Url_API_onlyTodalData.py',
         'GSC_Query'     => 'dataget_app/GSC_dataget/GSC_Query_API_onlyTodalData.py',
         'Qsh_MK_RS_UV'  => 'dataget_app/GSC_dataget/Qsh_MK_RS_UV_GSC_API_onlyTodalData.py',
-        'KW_data_get'  => 'dataget_app/KW_dataget/Qsh_MK_RS_UV_GSC_API_onlyTodalData.py',
+        'KW_data_get'  => 'dataget_app/KW_dataget/serps-result_organic_API_pagenation.py',
+        'KW_volume_get'  => 'dataget_app/KW_dataget/ads-API_Current_KW_planner.py',
     ];
 
     public function index()
