@@ -16,6 +16,9 @@ yarn-error.log
 /.idea
 /.vscode
 /dataget_app/setting_file/json_file
+/dataget_app/setting_file/api_json.py
+/dataget_app/setting_file/api_yaml.py
+/dataget_app/setting_file/gcp_api.py
 **/__pycache__/**
 __pycache__/
 AI_apikey.py
