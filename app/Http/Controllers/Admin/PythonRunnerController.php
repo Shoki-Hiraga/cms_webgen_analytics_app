@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 class PythonRunnerController extends Controller
 {
     private $scripts = [
+        'テストカウンターPython'  => 'dataget_app/test/test.py',
         'Directory_API' => 'dataget_app/GA4_dataget/Directory_API.py',
         'FullUrl_API'   => 'dataget_app/GA4_dataget/FullUrl_API.py',
         'Media_Url_API' => 'dataget_app/GA4_dataget/Media_Url_API.py',
