@@ -11,6 +11,7 @@
             @csrf
             @method('PUT')
 
+            {{-- Keyword --}}
             <div class="form-group">
                 <label for="keyword">キーワード</label>
                 <input type="text"
@@ -21,6 +22,36 @@
                        class="form-control">
 
                 @error('keyword')
+                    <div class="error">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- Product --}}
+            <div class="form-group">
+                <label for="product">商品名</label>
+                <input type="text"
+                       name="product"
+                       id="product"
+                       value="{{ old('product', $keyword->product) }}"
+                       required
+                       class="form-control">
+
+                @error('product')
+                    <div class="error">{{ $message }}</div>
+                @enderror
+            </div>
+
+            {{-- Priority --}}
+            <div class="form-group">
+                <label for="priority">優先度</label>
+                <input type="text"
+                       name="priority"
+                       id="priority"
+                       value="{{ old('priority', $keyword->priority) }}"
+                       required
+                       class="form-control">
+
+                @error('priority')
                     <div class="error">{{ $message }}</div>
                 @enderror
             </div>
@@ -37,7 +68,7 @@
             @method('DELETE')
 
             <button type="submit" class="btn-danger"
-                onclick="return confirm('本当に削除しますか？')">
+                    onclick="return confirm('本当に削除しますか？')">
                 削除
             </button>
         </form>

@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class OrganicKeyword extends Model
 {
-    protected $fillable = ['keyword'];
+    protected $fillable = [
+        'keyword',
+        'product',
+        'priority',
+    ];
+
     protected $table = 'organic_keywords';
 }

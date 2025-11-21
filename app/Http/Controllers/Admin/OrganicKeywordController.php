@@ -34,10 +34,14 @@ class OrganicKeywordController extends Controller
 
         $request->validate([
             'keyword' => 'required|string|max:255|unique:organic_keywords,keyword,' . $keyword->id,
+            'product' => 'required|string|max:255',
+            'priority' => 'required|string|max:255',
         ]);
 
         $keyword->update([
-            'keyword' => $request->keyword
+            'keyword' => $request->keyword,
+            'product' => $request->product,
+            'priority' => $request->priority,
         ]);
 
         return redirect()
@@ -68,10 +72,15 @@ class OrganicKeywordController extends Controller
     {
         $request->validate([
             'keyword' => 'required|string|max:255|unique:organic_keywords,keyword',
+            'product' => 'required|string|max:255',
+            'priority' => 'required|string|max:255',
         ]);
 
+
         OrganicKeyword::create([
-            'keyword' => $request->keyword
+            'keyword' => $request->keyword,
+            'product' => $request->product,
+            'priority' => $request->priority,
         ]);
 
         return redirect()
@@ -90,12 +99,14 @@ class OrganicKeywordController extends Controller
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Keyword', 'Created At']);
+            fputcsv($handle, ['ID', 'Keyword', 'Product', 'Priority', 'Created At']);
 
             \App\Models\OrganicKeyword::cursor()->each(function ($keyword) use ($handle) {
                 fputcsv($handle, [
                     $keyword->id,
                     $keyword->keyword,
+                    $keyword->product,
+                    $keyword->priority,
                     $keyword->created_at,
                 ]);
             });
@@ -118,11 +129,15 @@ class OrganicKeywordController extends Controller
 
         while ($row = fgetcsv($file)) {
             $data = [
-                'keyword' => $row[1] ?? null,
+                'keyword'  => $row[1] ?? null,
+                'product'  => $row[2] ?? null,
+                'priority' => $row[3] ?? null,
             ];
 
             $validator = Validator::make($data, [
-                'keyword' => 'required|string|max:255|unique:organic_keywords,keyword',
+                'keyword'  => 'required|string|max:255|unique:organic_keywords,keyword',
+                'product'  => 'required|string|max:255',
+                'priority' => 'required|string|max:255',
             ]);
 
             if ($validator->fails()) {

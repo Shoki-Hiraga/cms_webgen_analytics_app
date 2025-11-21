@@ -33,11 +33,15 @@ class AdsKeywordController extends Controller
         $keyword = AdsKeyword::findOrFail($id);
 
         $request->validate([
-            'keyword' => 'required|string|max:255|unique:ads_keywords,keyword,' . $keyword->id,
+            'keyword'  => 'required|string|max:255|unique:ads_keywords,keyword,' . $keyword->id,
+            'product'  => 'required|string|max:255',
+            'priority' => 'required|string|max:255',
         ]);
 
         $keyword->update([
-            'keyword' => $request->keyword
+            'keyword'  => $request->keyword,
+            'product'  => $request->product,
+            'priority' => $request->priority,
         ]);
 
         return redirect()
@@ -67,11 +71,15 @@ class AdsKeywordController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'keyword' => 'required|string|max:255|unique:ads_keywords,keyword',
+            'keyword'  => 'required|string|max:255|unique:ads_keywords,keyword',
+            'product'  => 'required|string|max:255',
+            'priority' => 'required|string|max:255',
         ]);
 
         AdsKeyword::create([
-            'keyword' => $request->keyword
+            'keyword'  => $request->keyword,
+            'product'  => $request->product,
+            'priority' => $request->priority,
         ]);
 
         return redirect()
@@ -89,12 +97,14 @@ class AdsKeywordController extends Controller
 
         $callback = function () {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Keyword', 'Created At']);
+            fputcsv($handle, ['ID', 'Keyword', 'Product', 'Priority', 'Created At']);
 
             \App\Models\AdsKeyword::cursor()->each(function ($keyword) use ($handle) {
                 fputcsv($handle, [
                     $keyword->id,
                     $keyword->keyword,
+                    $keyword->product,
+                    $keyword->priority,
                     $keyword->created_at,
                 ]);
             });
@@ -116,12 +126,17 @@ class AdsKeywordController extends Controller
         $header = fgetcsv($file); // ヘッダー行をスキップ
 
         while ($row = fgetcsv($file)) {
+
             $data = [
-                'keyword' => $row[1] ?? null,
+                'keyword'  => $row[1] ?? null,
+                'product'  => $row[2] ?? null,
+                'priority' => $row[3] ?? null,
             ];
 
             $validator = Validator::make($data, [
-                'keyword' => 'required|string|max:255|unique:ads_keywords,keyword',
+                'keyword'  => 'required|string|max:255|unique:ads_keywords,keyword',
+                'product'  => 'required|string|max:255',
+                'priority' => 'required|string|max:255',
             ]);
 
             if ($validator->fails()) {
@@ -137,5 +152,4 @@ class AdsKeywordController extends Controller
             ->route('admin.ads_keywords.index')
             ->with('success', 'CSVをインポートしました');
     }
-
 }

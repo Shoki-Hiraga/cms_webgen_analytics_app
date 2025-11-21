@@ -23,6 +23,8 @@
                 <tr>
                     <th>ID</th>
                     <th>キーワード</th>
+                    <th>商品名</th>
+                    <th>優先度</th>
                     <th>作成日</th>
                     <th>編集</th>
                     <th>削除</th>
@@ -34,6 +36,8 @@
                 <tr>
                     <td>{{ $kw->id }}</td>
                     <td>{{ $kw->keyword }}</td>
+                    <td>{{ $kw->product }}</td>
+                    <td>{{ $kw->priority }}</td>
                     <td>{{ $kw->created_at }}</td>
 
                     <td>

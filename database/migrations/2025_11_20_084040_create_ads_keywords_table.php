@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('ads_keywords', function (Blueprint $table) {
             $table->id();
             $table->string('keyword')->unique();
+            $table->string('product');
+            $table->string('priority');
             $table->timestamps();
         });
     }

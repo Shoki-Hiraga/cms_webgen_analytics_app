@@ -18,6 +18,16 @@
                 </tr>
 
                 <tr>
+                    <th>商品名</th>
+                    <td>{{ $keyword->product }}</td>
+                </tr>
+
+                <tr>
+                    <th>優先度</th>
+                    <td>{{ $keyword->priority }}</td>
+                </tr>
+
+                <tr>
                     <th>作成日</th>
                     <td>{{ $keyword->created_at }}</td>
                 </tr>
