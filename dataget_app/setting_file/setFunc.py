@@ -24,9 +24,9 @@ def get_db_config():
         print('[INFO] 本番DB設定を使用します')
         db_config = {
             'host': 'mysql8004.xserver.jp',
-            'user': 'chasercb750_anal',
+            'user': 'chasercb750_aqsh',
             'password': '78195090Cb',
-            'database': 'chasercb750_gwebanalytics',
+            'database': 'chasercb750_qshanalytics',
             'port': 3306,
             'charset': 'utf8mb4',
             'ssl_disabled': True
