@@ -36,23 +36,30 @@ def get_db_config():
 
 def get_keywords_from_db(table_name):
     """
-    指定テーブル（organic_keywords / ads_keywords）から keyword を取得
+    ads_keywords / organic_keywords から
+    keyword, product, priority を取得して返す
     """
     try:
         config = get_db_config()
         conn = mysql.connector.connect(**config)
-        cursor = conn.cursor()
 
-        query = f"SELECT keyword FROM {table_name} ORDER BY id ASC"
+        # ★★ dict 形式で取得（重要）
+        cursor = conn.cursor(dictionary=True)
+
+        query = f"""
+            SELECT keyword, product, priority
+            FROM {table_name}
+            ORDER BY id ASC
+        """
+
         cursor.execute(query)
         rows = cursor.fetchall()
 
         cursor.close()
         conn.close()
 
-        keywords = [row[0] for row in rows]
-        print(f"[INFO] {table_name} から {len(keywords)} 件キーワードを取得しました")
-        return keywords
+        print(f"[INFO] {table_name} から {len(rows)} 件キーワードを取得しました")
+        return rows   # ← ここが辞書のリストになる！
 
     except Exception as e:
         print(f"[DB ERROR] キーワード取得失敗: {e}")

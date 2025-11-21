@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('ads_keyword_planner_results', function (Blueprint $table) {
             $table->id();
-            $table->string('keyword');
+
+            // ★ 追加したい項目（元の ads_keywords テーブルから）
+            $table->string('original_keyword'); // 元キーワード
+            $table->string('product');      
+            $table->string('priority');
+
+            // API で取得する情報
+            $table->string('keyword'); // 提案キーワード（これまでも存在）
             $table->string('avg_monthly_search_volume')->nullable();
             $table->string('competition_level')->nullable();
             $table->string('competition_index')->nullable();
@@ -22,11 +29,12 @@ return new class extends Migration
             $table->timestamps();
         });
     }
+
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('ads_keyword_planner');
+        Schema::dropIfExists('ads_keyword_planner_results');
     }
 };

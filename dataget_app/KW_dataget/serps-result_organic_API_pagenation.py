@@ -10,10 +10,11 @@ from setting_file.setFunc import get_db_config, get_keywords_from_db
 
 import mysql.connector
 import time
+from googleapiclient.errors import HttpError
 
 
 #############################################
-# ■ APIキー設定
+# Google Custom Search API
 #############################################
 print("[INIT] Google Custom Search API 初期化中...")
 
@@ -35,111 +36,145 @@ delaytime = 4.0
 
 
 #############################################
-# ■ DB接続
+# DB接続
 #############################################
 def get_db_connection():
     try:
         config = get_db_config()
         conn = mysql.connector.connect(**config)
-        print("[DEBUG] DB接続成功")
+        print(f"[DEBUG] DB接続成功 → Host: {config['host']} DB: {config['database']}")
         return conn
     except Exception as e:
-        print(f"[CRITICAL DB ERROR] DB接続失敗: {e}")
+        print(f"[CRITICAL] DB接続失敗: {e}")
         raise
 
 
 #############################################
-# ■ 重複チェック（10日以内）
+# 過去10日以内チェック
 #############################################
-def serp_exists_recent(keyword):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+def serp_exists_recent(original_keyword):
+    print(f"[CHECK] 重複チェック開始: {original_keyword}")
 
-        ten_days_ago = datetime.now() - timedelta(days=10)
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-        query = """
-            SELECT COUNT(*)
-            FROM serp_organic_results
-            WHERE keyword = %s AND created_at >= %s
-        """
+    ten_days_ago = datetime.now() - timedelta(days=10)
 
-        cursor.execute(query, (keyword, ten_days_ago))
-        count = cursor.fetchone()[0]
+    query = """
+        SELECT COUNT(*)
+        FROM serp_organic_results
+        WHERE original_keyword = %s AND created_at >= %s
+    """
 
-        cursor.close()
-        conn.close()
+    cursor.execute(query, (original_keyword, ten_days_ago))
+    count = cursor.fetchone()[0]
 
-        if count > 0:
-            print(f"[SKIP] {keyword} は過去10日以内に取得済み → スキップします")
-        else:
-            print(f"[INFO] {keyword} は取得対象です")
+    cursor.close()
+    conn.close()
 
-        return count > 0
+    if count > 0:
+        print(f"[SKIP] {original_keyword} → 過去10日以内に取得済み")
+    else:
+        print(f"[INFO] {original_keyword} → 取得対象です")
 
-    except Exception as e:
-        print(f"[DB ERROR] 重複チェック失敗: {e}")
-        return False
+    return count > 0
 
 
 #############################################
-# ■ INSERT
+# INSERT
 #############################################
-def insert_serp_result(fetched_date, rank, keyword, url, title):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+def insert_serp_result(fetched_date, rank, original_keyword,
+                       product, priority, keyword, url, title):
 
-        insert_query = """
-            INSERT INTO serp_organic_results
-            (fetched_date, rank, keyword, url, title, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, NOW(), NOW())
-        """
+    print(f"[DB] 保存開始 → {keyword} (Rank: {rank})")
 
-        values = (fetched_date, rank, keyword, url, title)
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-        cursor.execute(insert_query, values)
-        conn.commit()
+    insert_query = """
+        INSERT INTO serp_organic_results
+        (fetched_date, rank, original_keyword, product, priority,
+         keyword, url, title, created_at, updated_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+    """
 
-        cursor.close()
-        conn.close()
+    values = (
+        fetched_date,
+        rank,
+        original_keyword,
+        product,
+        priority,
+        keyword,
+        url,
+        title
+    )
 
-        print(f"[DB] 保存成功：{keyword}（{rank}位）")
+    cursor.execute(insert_query, values)
+    conn.commit()
 
-    except Exception as e:
-        print(f"[DB ERROR] SERP保存失敗: {e}")
+    cursor.close()
+    conn.close()
+
+    print(f"[DB] 保存成功：{keyword}（{rank}位）")
 
 
 #############################################
-# ■ Google API 準備
+# Google API 再生成
 #############################################
+def rebuild_service():
+    global google_api_key, service
+    service = build("customsearch", "v1", developerKey=google_api_key)
+    print(f"[INFO] APIサービス再構築完了 → 使用キー index: {api_key_index}")
+
+
+# 初回構築
 service = build("customsearch", "v1", developerKey=google_api_key)
 results_per_page = 10
 max_pages_to_fetch = 1
 
 
 #############################################
-# ■ SERP取得メイン
+# SERP取得メイン
 #############################################
-def search_and_save_to_db(keyword):
+def search_and_save_to_db(original_keyword, product, priority):
     global request_count
     today = date.today().isoformat()
 
+    print("\n===========================================")
+    print(f"[PROCESS] {original_keyword} の SERP 取得開始")
+    print("===========================================\n")
+
+    search_results = []
+
     try:
-        print(f"\n[PROCESS] {keyword} の SERP 取得開始")
-
-        search_results = []
-
         for page in range(max_pages_to_fetch):
             start_index = page * results_per_page + 1
-            print(f"[REQUEST] KW: {keyword} / Page: {page+1}")
+            print(f"[REQUEST] KW: {original_keyword} / Page: {page+1}")
 
-            res = service.cse().list(
-                q=keyword,
-                cx=CUSTOM_SEARCH_ENGINE_ID,
-                num=results_per_page,
-                start=start_index
-            ).execute()
+            try:
+                res = service.cse().list(
+                    q=original_keyword,
+                    cx=CUSTOM_SEARCH_ENGINE_ID,
+                    num=results_per_page,
+                    start=start_index
+                ).execute()
+            except HttpError as e:
+                if e.resp.status == 429:
+                    # APIキー切り替え
+                    global api_key_index, google_api_key
+                    api_key_index += 1
+
+                    if api_key_index > len(api_keys):
+                        print("[CRITICAL] 全APIキーがクォータ超過 → 強制終了")
+                        exit()
+
+                    google_api_key = api_keys[api_key_index]
+                    print(f"[WARN] APIキーを切り替え → {api_key_index}")
+
+                    rebuild_service()
+                    continue
+                else:
+                    raise e
 
             request_count += 1
             print(f"[API] {request_count} 回目リクエスト成功")
@@ -151,40 +186,54 @@ def search_and_save_to_db(keyword):
 
             for item in items:
                 search_results.append([
-                    keyword,
+                    original_keyword,
                     item.get("link"),
                     item.get("title"),
                 ])
 
             time.sleep(delaytime)
 
+        # 保存処理
         for index, row in enumerate(search_results, start=1):
-            insert_serp_result(today, index, row[0], row[1], row[2])
+            insert_serp_result(
+                today,
+                index,
+                original_keyword,
+                product,
+                priority,
+                row[0],  # keyword
+                row[1],  # URL
+                row[2]   # title
+            )
 
-        print(f"[DONE] {keyword}: {len(search_results)} 件 保存完了")
+        print(f"[DONE] {original_keyword}: {len(search_results)} 件 保存完了\n")
 
     except Exception as e:
-        print(f"[ERROR] {keyword} 処理中エラー: {e}")
+        print(f"[ERROR] {original_keyword} 処理中エラー: {e}")
 
 
 #############################################
-# ■ メイン実行
+# メイン実行
 #############################################
 if __name__ == "__main__":
     print("===== SERP Organic API 実行開始 =====")
 
-    # ★ キーワードを DB から取得（NEW）
-    search_keywords_list = get_keywords_from_db("organic_keywords")
+    search_keywords = get_keywords_from_db("organic_keywords")
 
-    if not search_keywords_list:
+    print(f"[INFO] organic_keywords 取得数: {len(search_keywords)}")
+
+    if not search_keywords:
         print("[ERROR] organic_keywords にキーワードがありません")
         exit()
 
-    for keyword in search_keywords_list:
+    for row in search_keywords:
+        original_keyword = row["keyword"]
+        product = row["product"]
+        priority = row["priority"]
 
-        if serp_exists_recent(keyword):
+        if serp_exists_recent(original_keyword):
             continue
 
-        search_and_save_to_db(keyword)
+        search_and_save_to_db(original_keyword, product, priority)
 
     print("===== すべてのキーワード処理完了 =====")

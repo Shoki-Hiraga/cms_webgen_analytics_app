@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 
 
 #############################################
-# ■ Google Ads API クライアント
+# Google Ads API クライアント
 #############################################
 print("[INIT] Google Ads API 初期化中...")
 client = GoogleAdsClient.load_from_storage(api_yaml.current)
@@ -23,13 +23,13 @@ delay_time = 3.4
 
 
 #############################################
-# ■ DB接続
+# DB接続
 #############################################
 def get_db_connection():
     try:
         config = get_db_config()
         conn = mysql.connector.connect(**config)
-        print("[DEBUG] DB接続成功")
+        print("[DEBUG] DB接続成功:", config["host"], config["database"])
         return conn
     except Exception as e:
         print(f"[CRITICAL DB ERROR] DB接続失敗: {e}")
@@ -37,152 +37,149 @@ def get_db_connection():
 
 
 #############################################
-# ■ 重複チェック（10日以内）
+# 過去10日以内の重複チェック（original_keyword）
 #############################################
-def record_exists_recent(keyword):
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+def record_exists_recent(original_keyword):
+    print(f"[CHECK] 重複チェック開始: {original_keyword}")
 
-        ten_days_ago = datetime.now() - timedelta(days=10)
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-        query = """
-            SELECT COUNT(*)
-            FROM ads_keyword_planner_results
-            WHERE keyword = %s AND created_at >= %s
-        """
+    ten_days_ago = datetime.now() - timedelta(days=10)
 
-        cursor.execute(query, (keyword, ten_days_ago))
-        count = cursor.fetchone()[0]
+    query = """
+        SELECT COUNT(*)
+        FROM ads_keyword_planner_results
+        WHERE original_keyword = %s AND created_at >= %s
+    """
 
-        cursor.close()
-        conn.close()
+    cursor.execute(query, (original_keyword, ten_days_ago))
+    count = cursor.fetchone()[0]
 
-        if count > 0:
-            print(f"[SKIP] {keyword} は過去10日以内に取得済み → スキップ")
-        else:
-            print(f"[INFO] {keyword} は取得対象です")
+    cursor.close()
+    conn.close()
 
-        return count > 0
+    if count > 0:
+        print(f"[SKIP] {original_keyword} は過去10日以内に取得済み → スキップ")
+    else:
+        print(f"[INFO] {original_keyword} は取得対象です")
 
-    except Exception as e:
-        print(f"[DB ERROR] 重複チェック失敗: {e}")
-        return False
+    return count > 0
 
 
 #############################################
-# ■ Ads キーワード保存
+# Ads キーワード保存
 #############################################
-def insert_ads_keyword_data(keyword, search_volume, competition_level,
+def insert_ads_keyword_data(original_keyword, product, priority,
+                            keyword, search_volume, competition_level,
                             competition_index, low_cpc, high_cpc):
 
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
+    print(f"[DB] 保存開始: {keyword}")
 
-        insert_query = """
-            INSERT INTO ads_keyword_planner_results
-            (keyword, avg_monthly_search_volume, competition_level,
-             competition_index, low_cpc, high_cpc, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
-        """
+    conn = get_db_connection()
+    cursor = conn.cursor()
 
-        values = (
-            keyword, search_volume, competition_level,
-            competition_index, low_cpc, high_cpc
-        )
+    insert_query = """
+        INSERT INTO ads_keyword_planner_results
+        (original_keyword, product, priority, keyword,
+         avg_monthly_search_volume, competition_level,
+         competition_index, low_cpc, high_cpc,
+         created_at, updated_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+    """
 
-        cursor.execute(insert_query, values)
-        conn.commit()
+    values = (
+        original_keyword,
+        product,
+        priority,
+        keyword,
+        search_volume,
+        competition_level,
+        competition_index,
+        low_cpc,
+        high_cpc
+    )
 
-        cursor.close()
-        conn.close()
+    cursor.execute(insert_query, values)
+    conn.commit()
 
-        print(f"[DB] 保存成功: {keyword}")
+    cursor.close()
+    conn.close()
 
-    except Exception as e:
-        print(f"[DB ERROR] 保存失敗: {e}")
+    print(f"[DB] 保存成功: {keyword}")
 
 
 #############################################
-# ■ Keyword Planner API 実行
+# Keyword Planner API
 #############################################
 def get_keyword_ideas(client, customer_id, keyword_texts):
     print(f"[API] Ads API リクエスト開始: {keyword_texts}")
 
     keyword_plan_idea_service = client.get_service("KeywordPlanIdeaService")
-    language_id = 1000
 
     request = client.get_type("GenerateKeywordIdeasRequest")
     request.customer_id = customer_id
-    request.language = client.get_service("GoogleAdsService").language_constant_path(language_id)
+    request.language = client.get_service("GoogleAdsService").language_constant_path(1000)
     request.keyword_seed.keywords.extend(keyword_texts)
 
-    try:
-        response = keyword_plan_idea_service.generate_keyword_ideas(request=request)
-        print("[API] Keyword Ideas 成功")
-    except Exception as e:
-        print(f"[API ERROR] Keyword Ideas エラー: {e}")
-        return []
+    response = keyword_plan_idea_service.generate_keyword_ideas(request=request)
+
+    print("[API] Keyword Ideas 成功")
 
     keyword_data = []
 
     for result in response.results:
         metrics = result.keyword_idea_metrics
 
-        avg_monthly_searches = metrics.avg_monthly_searches or '-'
-        competition_level = metrics.competition.name or '-'
-        competition_index = metrics.competition_index or '-'
-
-        low_top_of_page_bid = (
-            metrics.low_top_of_page_bid_micros / 1_000_000
-            if metrics.low_top_of_page_bid_micros else None
-        )
-        high_top_of_page_bid = (
-            metrics.high_top_of_page_bid_micros / 1_000_000
-            if metrics.high_top_of_page_bid_micros else None
-        )
+        print(f"[RESULT] {result.text} | Search: {metrics.avg_monthly_searches}")
 
         keyword_data.append({
             "keyword": result.text,
-            "avg_monthly_search_volume": avg_monthly_searches,
-            "low_cpc": low_top_of_page_bid,
-            "high_cpc": high_top_of_page_bid,
-            "competition_level": competition_level,
-            "competition_index": competition_index,
+            "avg_monthly_search_volume": metrics.avg_monthly_searches,
+            "low_cpc": (metrics.low_top_of_page_bid_micros / 1_000_000
+                        if metrics.low_top_of_page_bid_micros else None),
+            "high_cpc": (metrics.high_top_of_page_bid_micros / 1_000_000
+                        if metrics.high_top_of_page_bid_micros else None),
+            "competition_level": metrics.competition.name,
+            "competition_index": metrics.competition_index,
         })
 
     return keyword_data
 
 
 #############################################
-# ■ メイン処理
+# メイン処理
 #############################################
 if __name__ == "__main__":
     print("========== Google Ads Keyword Planner 実行開始 ==========")
 
-    # ★ DB から Ads キーワード取得（NEW）
     search_keywords_list = get_keywords_from_db("ads_keywords")
+
+    print(f"[INFO] ads_keywords 取得数: {len(search_keywords_list)}")
 
     if not search_keywords_list:
         print("[ERROR] ads_keywords にキーワードがありません")
         exit()
 
-    for keyword in search_keywords_list:
+    for row in search_keywords_list:
+        original_keyword = row["keyword"]
+        product = row["product"]
+        priority = row["priority"]
 
-        if record_exists_recent(keyword):
+        print("\n-----------------------------------------")
+        print(f"[START] {original_keyword} | {product} | {priority}")
+        print("-----------------------------------------\n")
+
+        if record_exists_recent(original_keyword):
             continue
 
-        results = get_keyword_ideas(client, customer_id, [keyword])
+        results = get_keyword_ideas(client, customer_id, [original_keyword])
 
         for item in results:
-            print(
-                f"[RESULT] KW: {item['keyword']} | 検索数: {item['avg_monthly_search_volume']} "
-                f"| CPC低: {item['low_cpc']} | CPC高: {item['high_cpc']} "
-                f"| 競合レベル: {item['competition_level']} | 指標: {item['competition_index']}"
-            )
-
             insert_ads_keyword_data(
+                original_keyword=original_keyword,
+                product=product,
+                priority=priority,
                 keyword=item["keyword"],
                 search_volume=item["avg_monthly_search_volume"],
                 competition_level=item["competition_level"],
