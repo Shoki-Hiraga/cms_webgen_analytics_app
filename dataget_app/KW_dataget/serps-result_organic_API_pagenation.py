@@ -130,7 +130,7 @@ def rebuild_service():
 # 初回構築
 service = build("customsearch", "v1", developerKey=google_api_key)
 results_per_page = 10
-max_pages_to_fetch = 1
+max_pages_to_fetch = 3
 
 
 #############################################
