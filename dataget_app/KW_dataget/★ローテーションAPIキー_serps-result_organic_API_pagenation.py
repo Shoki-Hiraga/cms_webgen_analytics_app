@@ -11,6 +11,7 @@ from setting_file.setFunc import get_db_config, get_keywords_from_db
 import mysql.connector
 import time
 from googleapiclient.errors import HttpError
+from googleapiclient.discovery import build
 
 
 #############################################
@@ -20,6 +21,7 @@ print("[INIT] Google Custom Search API 初期化中...")
 
 request_count = 0
 api_key_index = 1
+
 api_keys = {
     1: gcp_api.custom_search_API_KEY_current,
     2: gcp_api.custom_search_API_KEY_332r,
@@ -28,12 +30,81 @@ api_keys = {
     5: gcp_api.custom_search_API_KEY_2sho,
     6: gcp_api.custom_search_API_KEY_seohira,
     7: gcp_api.custom_search_API_KEY_332r_Paid,
-    8: gcp_api.custom_search_API_KEY_current_data_ana_p
+    8: gcp_api.custom_search_API_KEY_current_data_ana_p,
 }
 
 google_api_key = api_keys[api_key_index]
 CUSTOM_SEARCH_ENGINE_ID = gcp_api.custom_search_ENGINE_ID_current
 delaytime = 4.0
+results_per_page = 10
+max_pages_to_fetch = 3
+
+
+#############################################
+# Google API 再構築
+#############################################
+def rebuild_service():
+    global google_api_key, service
+    service = build("customsearch", "v1", developerKey=google_api_key)
+    print(f"[INFO] APIサービス再構築完了 → 使用キー index: {api_key_index}")
+
+
+#############################################
+# APIキー ローテーション
+#############################################
+def rotate_api_key():
+    global api_key_index, google_api_key
+
+    api_key_index += 1
+
+    if api_key_index > len(api_keys):
+        print("[CRITICAL] 全APIキーが使用不可 → 強制終了")
+        raise RuntimeError("All Google API keys exhausted")
+
+    google_api_key = api_keys[api_key_index]
+    print(f"[WARN] APIキー切り替え → index: {api_key_index}")
+    rebuild_service()
+
+
+#############################################
+# Google API 安全リクエスト
+#############################################
+def safe_google_request(original_keyword, start_index):
+    max_retry = len(api_keys)
+
+    for retry in range(max_retry):
+        try:
+            print(f"[REQUEST] KW: {original_keyword} / start: {start_index} / key: {api_key_index}")
+
+            res = service.cse().list(
+                q=original_keyword,
+                cx=CUSTOM_SEARCH_ENGINE_ID,
+                num=results_per_page,
+                start=start_index
+            ).execute()
+
+            return res  # 成功時
+
+        except HttpError as e:
+            status = e.resp.status
+            print(f"[WARN] Google API Error → Status: {status} / retry: {retry+1}")
+
+            # ローテーション対象エラー
+            if status in [403, 429, 500, 503]:
+                rotate_api_key()
+                time.sleep(2)
+                continue
+            else:
+                raise e
+
+    print("[CRITICAL] 全APIキーでリクエスト失敗")
+    raise RuntimeError("All API keys failed")
+
+
+#############################################
+# 初回API構築
+#############################################
+service = build("customsearch", "v1", developerKey=google_api_key)
 
 
 #############################################
@@ -120,22 +191,7 @@ def insert_serp_result(fetched_date, rank, original_keyword,
 
 
 #############################################
-# Google API 再生成
-#############################################
-def rebuild_service():
-    global google_api_key, service
-    service = build("customsearch", "v1", developerKey=google_api_key)
-    print(f"[INFO] APIサービス再構築完了 → 使用キー index: {api_key_index}")
-
-
-# 初回構築
-service = build("customsearch", "v1", developerKey=google_api_key)
-results_per_page = 10
-max_pages_to_fetch = 3
-
-
-#############################################
-# SERP取得メイン
+# SERP取得メイン（APIローテーション対応）
 #############################################
 def search_and_save_to_db(original_keyword, product, priority):
     global request_count
@@ -150,32 +206,12 @@ def search_and_save_to_db(original_keyword, product, priority):
     try:
         for page in range(max_pages_to_fetch):
             start_index = page * results_per_page + 1
-            print(f"[REQUEST] KW: {original_keyword} / Page: {page+1}")
 
             try:
-                res = service.cse().list(
-                    q=original_keyword,
-                    cx=CUSTOM_SEARCH_ENGINE_ID,
-                    num=results_per_page,
-                    start=start_index
-                ).execute()
-            except HttpError as e:
-                if e.resp.status == 429:
-                    # APIキー切り替え
-                    global api_key_index, google_api_key
-                    api_key_index += 1
-
-                    if api_key_index > len(api_keys):
-                        print("[CRITICAL] 全APIキーがクォータ超過 → 強制終了")
-                        exit()
-
-                    google_api_key = api_keys[api_key_index]
-                    print(f"[WARN] APIキーを切り替え → {api_key_index}")
-
-                    rebuild_service()
-                    continue
-                else:
-                    raise e
+                res = safe_google_request(original_keyword, start_index)
+            except Exception as e:
+                print(f"[ERROR] API取得失敗（全キー枯渇）: {e}")
+                break
 
             request_count += 1
             print(f"[API] {request_count} 回目リクエスト成功")
@@ -202,9 +238,9 @@ def search_and_save_to_db(original_keyword, product, priority):
                 original_keyword,
                 product,
                 priority,
-                row[0],  # keyword
-                row[1],  # URL
-                row[2]   # title
+                row[0],
+                row[1],
+                row[2]
             )
 
         print(f"[DONE] {original_keyword}: {len(search_results)} 件 保存完了\n")
