@@ -30,7 +30,7 @@ api_keys = {
     5: gcp_api.custom_search_API_KEY_2sho,
     6: gcp_api.custom_search_API_KEY_seohira,
     7: gcp_api.custom_search_API_KEY_332r_Paid,
-    8: gcp_api.custom_search_API_KEY_current_data_ana_p,
+    8: gcp_api.custom_search_API_KEY_Paid_current_data_ana_p,
 }
 
 google_api_key = api_keys[api_key_index]
