@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\DatasetingController;
 use App\Http\Controllers\Admin\PythonRunnerController;
 use App\Http\Controllers\Admin\OrganicKeywordController;
 use App\Http\Controllers\Admin\AdsKeywordController;
+use App\Http\Controllers\Admin\SetSlugController;
 
 /*
 |--------------------------------------------------------------------------
@@ -119,6 +120,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::post('ads_keywords/import', [AdsKeywordController::class, 'import'])
         ->name('ads_keywords.import');
+
+
+    Route::resource('set-slugs', SetSlugController::class)
+        ->names('set_slugs')
+        ->except(['show']);
 
     // Python実行系
     Route::get('python-api', [PythonRunnerController::class, 'index'])

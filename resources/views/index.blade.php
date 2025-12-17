@@ -25,6 +25,7 @@
             <a href="{{ route('admin.ga4_settings.index') }}" class="link-card">GA4 設定</a>
             <a href="{{ route('admin.gsc_settings.index') }}" class="link-card">GSC 設定</a>
             <a href="{{ route('admin.dataseting.index') }}" class="link-card">日付 設定</a>            
+            <a href="{{ route('admin.set_slugs.index') }}" class="link-card">Set Slug 管理</a>
         </div>
 
     <h2 class="page-description">KW GET 基本設定</h2>
