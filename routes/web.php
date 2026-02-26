@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\DatasetingController;
 use App\Http\Controllers\Admin\PythonRunnerController;
 use App\Http\Controllers\Admin\OrganicKeywordController;
 use App\Http\Controllers\Admin\AdsKeywordController;
+use App\Http\Controllers\Admin\AreaAdsKeywordController;
 use App\Http\Controllers\Admin\SetSlugController;
 
 /*
@@ -109,6 +110,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->names('ads_keywords')
         ->except(['show']);
 
+    Route::resource('area_ads_keywords', AreaAdsKeywordController::class)
+        ->names('area_ads_keywords')
+        ->except(['show']);
+
     Route::get('organic_keywords/export', [OrganicKeywordController::class, 'export'])
         ->name('organic_keywords.export');
 
@@ -120,6 +125,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     Route::post('ads_keywords/import', [AdsKeywordController::class, 'import'])
         ->name('ads_keywords.import');
+
+    Route::get('area_ads_keywords/export', [AreaAdsKeywordController::class, 'export'])
+        ->name('area_ads_keywords.export');
+
+    Route::post('area_ads_keywords/import', [AreaAdsKeywordController::class, 'import'])
+        ->name('area_ads_keywords.import');
 
 
     Route::resource('set-slugs', SetSlugController::class)

@@ -32,6 +32,7 @@
         <div class="link-grid">
             <a href="{{ route('admin.organic_keywords.index') }}" class="link-card">検索APIキーワード設定</a>
             <a href="{{ route('admin.ads_keywords.index') }}" class="link-card">KWプランナーキーワード設定</a>
+            <a href="{{ route('admin.area_ads_keywords.index') }}" class="link-card">エリアKWプランナーキーワード設定</a>
         </div>
 
     <h2 class="page-description">GA4 API</h2>

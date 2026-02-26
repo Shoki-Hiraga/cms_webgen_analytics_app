@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up()
+    {
+        Schema::create('area_ads_keyword_planner_results', function (Blueprint $table) {
+            $table->id();
+
+            // ★ 追加したい項目（元の area_ads_keywords テーブルから）
+            $table->string('original_keyword'); // 元キーワード
+            $table->string('product');
+            $table->string('priority');
+
+            // API で取得する情報
+            $table->string('keyword'); // 提案キーワード（これまでも存在）
+            $table->string('avg_monthly_search_volume')->nullable();
+            $table->string('competition_level')->nullable();
+            $table->string('competition_index')->nullable();
+            $table->decimal('low_cpc', 10, 2)->nullable();
+            $table->decimal('high_cpc', 10, 2)->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('area_ads_keyword_planner_results');
+    }
+};

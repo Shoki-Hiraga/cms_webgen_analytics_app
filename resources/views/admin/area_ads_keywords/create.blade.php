@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-slot name="title">新規 | Organic Keywords</x-slot>
-        <h2 class="page-title">Organic Keywords を追加</h2>
+        <x-slot name="title">新規 | Area_Ads Keywords</x-slot>
+        <h2 class="page-title">エリア Ads Keywords を追加</h2>
     </x-slot>
 
     <div class="form-container">
-        <form action="{{ route('admin.organic_keywords.store') }}" method="POST">
+        <form action="{{ route('admin.area_ads_keywords.store') }}" method="POST">
             @csrf
 
             {{-- Keyword --}}
@@ -42,7 +42,7 @@
             </div>
 
             <button type="submit" class="btn-primary">追加</button>
-            <a href="{{ route('admin.organic_keywords.index') }}" class="btn-secondary">キャンセル</a>
+            <a href="{{ route('admin.area_ads_keywords.index') }}" class="btn-secondary">キャンセル</a>
         </form>
     </div>
 </x-app-layout>

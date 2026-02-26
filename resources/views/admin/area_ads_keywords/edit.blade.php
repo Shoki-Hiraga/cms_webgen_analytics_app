@@ -7,7 +7,7 @@
     <div class="form-container">
 
         {{-- 編集フォーム --}}
-        <form action="{{ route('admin.ads_keywords.update', $keyword->id) }}" method="POST">
+        <form action="{{ route('admin.area_ads_keywords.update', $keyword->id) }}" method="POST">
             @csrf
             @method('PUT')
 
@@ -57,11 +57,11 @@
             </div>
 
             <button type="submit" class="btn-primary">更新</button>
-            <a href="{{ route('admin.ads_keywords.index') }}" class="btn-secondary">キャンセル</a>
+            <a href="{{ route('admin.area_ads_keywords.index') }}" class="btn-secondary">キャンセル</a>
         </form>
 
         {{-- 削除フォーム --}}
-        <form action="{{ route('admin.ads_keywords.destroy', $keyword->id) }}"
+        <form action="{{ route('admin.area_ads_keywords.destroy', $keyword->id) }}"
               method="POST"
               style="margin-top: 20px;">
             @csrf

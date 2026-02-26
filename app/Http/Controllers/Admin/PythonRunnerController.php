@@ -19,6 +19,7 @@ class PythonRunnerController extends Controller
         'Qsh_MK_RS_UV'  => 'dataget_app/GSC_dataget/Qsh_MK_RS_UV_GSC_API_onlyTodalData.py',
         'KW_Custom_Search_API'  => 'dataget_app/KW_dataget/serps-result_organic_API_pagenation.py',
         'KW_Ads_API_Volume'  => 'dataget_app/KW_dataget/ads-API_Current_KW_planner.py',
+        'エリア_KW_Ads_API_Volume'  => 'dataget_app/KW_dataget/area-ads-API_Current_KW_planner.py',
     ];
 
     public function index()

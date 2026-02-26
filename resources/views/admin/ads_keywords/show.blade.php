@@ -18,7 +18,7 @@
                 </tr>
 
                 <tr>
-                    <th>商品名</th>
+                    <th>プロダクト名</th>
                     <td>{{ $keyword->product }}</td>
                 </tr>
 

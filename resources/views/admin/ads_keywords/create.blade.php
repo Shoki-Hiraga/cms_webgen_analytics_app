@@ -21,7 +21,7 @@
 
             {{-- Product --}}
             <div class="form-group">
-                <label for="product">商品名</label>
+                <label for="product">プロダクト名</label>
                 <input type="text" name="product" id="product" 
                        value="{{ old('product') }}" required class="form-control">
 

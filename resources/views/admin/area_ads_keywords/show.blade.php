@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-slot name="title">詳細 | Organic Keywords</x-slot>
-        <h2 class="page-title">Organic Keyword 詳細</h2>
+        <x-slot name="title">詳細 | Ads Keywords</x-slot>
+        <h2 class="page-title">Ads Keyword 詳細</h2>
     </x-slot>
 
     <div class="detail-table-container">
@@ -39,7 +39,7 @@
             </tbody>
         </table>
 
-        <a href="{{ route('admin.organic_keywords.index') }}" class="back-link">← 一覧に戻る</a>
+        <a href="{{ route('admin.area_ads_keywords.index') }}" class="back-link">← 一覧に戻る</a>
     </div>
 
 </x-app-layout>

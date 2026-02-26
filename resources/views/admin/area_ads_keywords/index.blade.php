@@ -1,14 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <x-slot name="title">一覧 | Ads Keywords</x-slot>
-        <h2 class="page-title">Ads Keywords 一覧</h2>
+        <x-slot name="title">一覧 | Area Ads Keywords</x-slot>
+        <h2 class="page-title">エリア Ads Keywords 一覧</h2>
     </x-slot>
 
     <div class="table-container">
         <div class="actions">
-            <a href="{{ route('admin.ads_keywords.export') }}" class="btn-secondary">CSVエクスポート</a>
+            <a href="{{ route('admin.area_ads_keywords.export') }}" class="btn-secondary">CSVエクスポート</a>
 
-            <form action="{{ route('admin.ads_keywords.import') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.area_ads_keywords.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <button type="submit" class="btn-primary">CSVインポート</button>
                 <input type="file" name="csv_file" accept=".csv" required>
@@ -16,7 +16,7 @@
         </div>
 
         {{-- 新規追加ボタン --}}
-        <a href="{{ route('admin.ads_keywords.create') }}" class="btn-primary">＋ 新規追加</a>
+        <a href="{{ route('admin.area_ads_keywords.create') }}" class="btn-primary">＋ 新規追加</a>
 
         <table class="table-base">
             <thead>
@@ -41,11 +41,11 @@
                     <td>{{ $kw->created_at }}</td>
 
                     <td>
-                        <a href="{{ route('admin.ads_keywords.edit', $kw->id) }}">編集</a>
+                        <a href="{{ route('admin.area_ads_keywords.edit', $kw->id) }}">編集</a>
                     </td>
 
                     <td>
-                        <form action="{{ route('admin.ads_keywords.destroy', $kw->id) }}" method="POST"
+                        <form action="{{ route('admin.area_ads_keywords.destroy', $kw->id) }}" method="POST"
                             onsubmit="return confirm('削除してもよろしいですか？');">
                             @csrf
                             @method('DELETE')
