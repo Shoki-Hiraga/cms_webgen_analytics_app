@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <x-slot name="title">一覧 | Area Ads Keywords</x-slot>
-        <h2 class="page-title">エリア Ads Keywords 一覧</h2>
+        <h2 class="page-title">ALL Ads Keywords 一覧</h2>
     </x-slot>
 
     <div class="table-container">

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <x-slot name="title">新規 | Area_Ads Keywords</x-slot>
-        <h2 class="page-title">エリア Ads Keywords を追加</h2>
+        <h2 class="page-title">ALL Ads Keywords を追加</h2>
     </x-slot>
 
     <div class="form-container">
