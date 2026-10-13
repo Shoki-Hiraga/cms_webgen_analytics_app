@@ -30,9 +30,9 @@
 
     <h2 class="page-description">KW GET 基本設定</h2>
         <div class="link-grid">
-            <a href="{{ route('admin.organic_keywords.index') }}" class="link-card">検索APIキーワード設定</a>
-            <a href="{{ route('admin.ads_keywords.index') }}" class="link-card">KWプランナーキーワード設定</a>
-            <a href="{{ route('admin.area_ads_keywords.index') }}" class="link-card">ALL KWプランナーキーワード設定</a>
+            <a href="{{ route('admin.organic_keywords.index') }}" class="link-card">検索API KW設定</a>
+            <a href="{{ route('admin.ads_keywords.index') }}" class="link-card">KWプランナー KW設定</a>
+            <a href="{{ route('admin.area_ads_keywords.index') }}" class="link-card">ALL(area) KWプランナー KW設定</a>
         </div>
 
     <h2 class="page-description">GA4 API</h2>
